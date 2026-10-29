@@ -10,6 +10,7 @@ import Categories from './views/categories';
 import Community from './views/community';
 import NotFound from './views/not-found';
 import Profile from './views/profile';
+import Search from './views/search';
 import Section from './views/section';
 import Topic from './views/topic';
 
@@ -44,6 +45,7 @@ export default function App() {
               <Route path='/' element={<Categories />} />
               <Route path='/about/sections' element={<AboutSections />} />
               <Route path='/profile' element={<Profile />} />
+              <Route path='/search' element={<Search />} />
               <Route path='/s/:sectionCode/:sort?' element={<Section />} />
               <Route path='/c/:communityAddress/t/:commentCid' element={<Topic />} />
               <Route path='/c/:communityAddress/:sort?' element={<Community />} />

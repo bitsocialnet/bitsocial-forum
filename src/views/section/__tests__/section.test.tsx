@@ -8,7 +8,7 @@ import Section from '../section';
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
-  feedCalls: [] as Array<{ communities?: unknown[]; sortType?: string; filter?: { key: string } }>,
+  feedCalls: [] as Array<{ communities?: unknown[]; sortType?: string }>,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -16,7 +16,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  useFeed: (options: { communities?: unknown[]; sortType?: string; filter?: { key: string } }) => {
+  useFeed: (options: { communities?: unknown[]; sortType?: string }) => {
     testState.feedCalls.push(options);
     return {
       feed: [{ cid: 'QmThread', communityAddress: 'chain-one.bso', title: 'Chain launch plan', replyCount: 2, timestamp: 1, author: { shortAddress: 'alice' } }],
@@ -82,13 +82,10 @@ describe('Section', () => {
     expect(container.querySelector('a[aria-current="page"]')?.getAttribute('href')).toBe('/s/bso/new');
   });
 
-  it('filters the topic list by the tag in the URL and keeps it across sort tabs', async () => {
-    await renderAt('/s/bso/new?tag=Chain');
+  it('links tags to a search scoped to the section', async () => {
+    await renderAt('/s/bso');
 
-    expect(testState.feedCalls[0]).toMatchObject({ sortType: 'new', filter: { key: 'tag:Chain' } });
-    expect(container.querySelector('a[href="/s/bso/top?tag=Chain"]')).not.toBeNull();
-    // The active tag links back to the unfiltered list.
-    expect(container.querySelector('a[aria-current="true"]')?.getAttribute('href')).toBe('/s/bso/new');
+    expect(container.querySelector('a[href="/search?q=section%3Abso+tag%3AChain"]')?.textContent).toBe('Chain');
   });
 
   it('treats an unknown sort tab as a missing page', async () => {

@@ -2,11 +2,10 @@ import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { Pin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { withTag } from '../../lib/tags';
 import { formatFullDate, formatShortAge } from '../../lib/time';
 import TagList from '../tag-list';
 
-export default function TopicRow({ comment, now, listPath, activeTag }: { comment: Comment; now: number; listPath: string; activeTag?: string }) {
+export default function TopicRow({ comment, now, getTagPath }: { comment: Comment; now: number; getTagPath: (tag: string) => string }) {
   const { t } = useTranslation();
   const author = comment.author?.displayName || comment.author?.shortAddress || comment.author?.address;
   // Activity is the last reply, or the topic itself when nobody replied yet.
@@ -23,7 +22,7 @@ export default function TopicRow({ comment, now, listPath, activeTag }: { commen
         </div>
         <div className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-1'>
           {author ? <span className='text-xs text-muted-foreground'>{author}</span> : null}
-          <TagList tags={comment.flairs} getTagPath={(tag) => withTag(listPath, tag)} activeTag={activeTag} />
+          <TagList tags={comment.flairs} getTagPath={getTagPath} />
         </div>
       </td>
       <td className='py-3 text-center text-muted-foreground max-sm:hidden'>{comment.replyCount ?? 0}</td>

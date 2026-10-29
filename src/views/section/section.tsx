@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import Banner from '../../components/banner';
 import { Button } from '../../components/button';
 import NotFoundMessage from '../../components/not-found-message';
@@ -9,19 +9,17 @@ import TagList from '../../components/tag-list';
 import TopicList from '../../components/topic-list';
 import { getSectionBannerSrc } from '../../lib/banners';
 import { getShortAddress } from '../../lib/community-identifier';
+import { getSearchPath } from '../../lib/search';
 import { getSection, getSectionCategory, getSectionWinner } from '../../lib/sections';
-import { DEFAULT_TOPIC_SORT, parseTopicSort } from '../../lib/sorts';
-import { TAG_SEARCH_PARAM, withTag } from '../../lib/tags';
+import { parseTopicSort, TOPIC_SORTS } from '../../lib/sorts';
 
 // A section is a directory code: it opens whichever community currently ranks first for it. Topic
 // links use that community's exact address, so they keep working if another community takes the code.
 export default function Section() {
   const { t } = useTranslation();
   const { sectionCode, sort: sortSegment } = useParams();
-  const [searchParams] = useSearchParams();
   const section = getSection(sectionCode);
   const sort = parseTopicSort(sortSegment);
-  const tag = searchParams.get(TAG_SEARCH_PARAM) || undefined;
 
   if (!section || !sort) {
     return <NotFoundMessage title={t('section.notFound')} />;
@@ -29,8 +27,8 @@ export default function Section() {
 
   const winner = getSectionWinner(section);
   const otherCandidates = section.candidates.slice(1);
-  const basePath = `/s/${section.code}`;
-  const listPath = sort === DEFAULT_TOPIC_SORT ? basePath : `${basePath}/${sort}`;
+  // Tags search within this section.
+  const getTagPath = (tag: string) => getSearchPath({ section: section.code, tags: [tag] });
 
   return (
     <>
@@ -51,11 +49,11 @@ export default function Section() {
             </Link>
           </p>
         ) : null}
-        <TagList tags={section.flairs.map((text) => ({ text }))} getTagPath={(nextTag) => withTag(listPath, nextTag)} activeTag={tag} className='mt-3' />
+        <TagList tags={section.flairs.map((text) => ({ text }))} getTagPath={getTagPath} className='mt-3' />
       </header>
 
       <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
-        <SortTabs basePath={basePath} active={sort} tag={tag} />
+        <SortTabs basePath={`/s/${section.code}`} active={sort} />
         <Button disabled title={t('topics.postingSoon')}>
           <Plus aria-hidden />
           {t('topics.newTopic')}
@@ -63,7 +61,7 @@ export default function Section() {
       </div>
 
       {winner ? (
-        <TopicList communityAddress={winner} sort={sort} tag={tag} listPath={listPath} />
+        <TopicList communityAddresses={[winner]} sortType={TOPIC_SORTS[sort]} getTagPath={getTagPath} />
       ) : (
         <div className='glass-panel px-6 py-8'>
           <p className='font-semibold text-foreground'>{t('section.noCommunityTitle')}</p>

@@ -9,7 +9,7 @@ export default function Post({ comment, number, now }: { comment: Comment; numbe
 
   return (
     <article id={`post-${number}`} className='flex gap-3 border-b border-border/50 py-5'>
-      <Avatar name={displayName || address} seed={comment.author?.address} size={44} />
+      <Avatar name={displayName} seed={comment.author?.address} size={44} />
       <div className='min-w-0 flex-1'>
         <header className='flex items-baseline justify-between gap-3'>
           <p className='min-w-0 truncate text-sm'>

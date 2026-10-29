@@ -1,31 +1,39 @@
-import { useFeed } from '@bitsocial/bitsocial-react-hooks';
+import { useFeed, type Comment } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
 import { toCommunityIdentifier } from '../../lib/community-identifier';
-import { TOPIC_SORTS, type TopicSort } from '../../lib/sorts';
-import { getTagFeedFilter } from '../../lib/tags';
 import { Button } from '../button';
 import TopicRow from './topic-row';
 
 const TOPICS_PER_PAGE = 30;
 
-// Discourse's topic table inside a bitsocial.net glass panel. `listPath` is the page showing the list,
-// so a row's tags filter that same list.
-export default function TopicList({ communityAddress, sort, tag, listPath }: { communityAddress: string; sort: TopicSort; tag?: string; listPath: string }) {
+type FeedFilter = { key: string; filter: (comment: Comment) => boolean };
+
+// Discourse's topic table inside a bitsocial.net glass panel, over one or more communities. A row's
+// tags link through `getTagPath`, so each page decides what a tag search is scoped to.
+export default function TopicList({
+  communityAddresses,
+  sortType,
+  filter,
+  getTagPath,
+  emptyMessage,
+}: {
+  communityAddresses: string[];
+  sortType: string;
+  filter?: FeedFilter;
+  getTagPath: (tag: string) => string;
+  emptyMessage?: string;
+}) {
   const { t } = useTranslation();
   const { feed, hasMore, loadMore } = useFeed({
-    communities: [toCommunityIdentifier(communityAddress)],
-    sortType: TOPIC_SORTS[sort],
+    communities: communityAddresses.map(toCommunityIdentifier),
+    sortType,
     postsPerPage: TOPICS_PER_PAGE,
-    filter: tag ? getTagFeedFilter(tag) : undefined,
+    filter,
   });
   const now = Date.now();
 
   if (feed.length === 0) {
-    return (
-      <p className='glass-panel px-6 py-10 text-center text-sm text-muted-foreground'>
-        {hasMore ? t('topics.loading') : tag ? t('topics.emptyTag', { tag }) : t('topics.empty')}
-      </p>
-    );
+    return <p className='glass-panel px-6 py-10 text-center text-sm text-muted-foreground'>{hasMore ? t('topics.loading') : (emptyMessage ?? t('topics.empty'))}</p>;
   }
 
   return (
@@ -47,7 +55,7 @@ export default function TopicList({ communityAddress, sort, tag, listPath }: { c
           </thead>
           <tbody className='[&>tr:last-child]:border-b-0'>
             {feed.map((comment) => (
-              <TopicRow key={comment.cid} comment={comment} now={now} listPath={listPath} activeTag={tag} />
+              <TopicRow key={comment.cid} comment={comment} now={now} getTagPath={getTagPath} />
             ))}
           </tbody>
         </table>

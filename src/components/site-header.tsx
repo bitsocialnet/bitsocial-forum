@@ -2,10 +2,11 @@ import { Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ProfileButton from './profile-button';
+import SearchBar from './search-bar';
 import ThemeToggle from './theme-toggle';
 
 // Discourse's full-width header in bitsocial.net's topbar material: frosted, Exo labels, 44px controls.
-// Forum functions sit on the right; site links live in the sidebar and footer.
+// Search sits in the middle and forum functions on the right; site links live in the sidebar and footer.
 export default function SiteHeader({ isSidebarOpen, onToggleSidebar }: { isSidebarOpen: boolean; onToggleSidebar: () => void }) {
   const { t } = useTranslation();
 
@@ -22,11 +23,14 @@ export default function SiteHeader({ isSidebarOpen, onToggleSidebar }: { isSideb
         >
           {isSidebarOpen ? <X className='h-5 w-5' /> : <Menu className='h-5 w-5' />}
         </button>
-        <Link to='/' className='group inline-flex h-11 items-center gap-1'>
+        <Link to='/' aria-label='Bitsocial Forum' className='group inline-flex h-11 shrink-0 items-center gap-1'>
           <img src='./logo-small.png' width={32} height={32} alt='' aria-hidden='true' className='h-8 w-8 transition-[filter] group-hover:brightness-110' />
-          <span className='font-display text-xl text-muted-foreground transition-colors group-hover:text-foreground'>Bitsocial Forum</span>
+          <span className='hidden font-display text-xl text-muted-foreground transition-colors group-hover:text-foreground sm:inline'>Bitsocial Forum</span>
         </Link>
-        <div className='ms-auto flex items-center gap-1.5'>
+        <div className='mx-auto w-full min-w-0 max-w-xl px-1 sm:px-4'>
+          <SearchBar />
+        </div>
+        <div className='flex shrink-0 items-center gap-1.5'>
           <ThemeToggle />
           <ProfileButton />
         </div>

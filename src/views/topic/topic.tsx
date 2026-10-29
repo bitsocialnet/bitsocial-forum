@@ -8,8 +8,8 @@ import NotFoundMessage from '../../components/not-found-message';
 import Post from '../../components/post';
 import TagList from '../../components/tag-list';
 import { getShortAddress, toCommunityIdentifier } from '../../lib/community-identifier';
+import { getSearchPath } from '../../lib/search';
 import { getSectionForCommunity } from '../../lib/sections';
-import { withTag } from '../../lib/tags';
 
 // A topic reads top to bottom, oldest reply first and without nesting, like Discourse.
 export default function Topic() {
@@ -38,7 +38,10 @@ export default function Topic() {
               {getShortAddress(communityAddress)}
             </Link>
           )}
-          <TagList tags={comment.flairs} getTagPath={(tag) => withTag(section ? `/s/${section.code}` : `/c/${communityAddress}`, tag)} />
+          <TagList
+            tags={comment.flairs}
+            getTagPath={(tag) => getSearchPath(section ? { section: section.code, tags: [tag] } : { community: communityAddress, tags: [tag] })}
+          />
         </div>
       </header>
 

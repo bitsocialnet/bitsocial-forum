@@ -11,7 +11,8 @@ Update this file in the same change that completes or reshapes an item. Decision
 - [x] Read any community by address, live over P2P in the browser
 - [x] Docs: README, architecture, sections, roadmap, PRODUCT, DESIGN
 - [x] Generated banners for the home page and every section
-- [x] Clickable tags that filter a topic list (`?tag=`)
+- [x] Header search bar and search page (`/search`) with `tag:`, `section:` and `community:` tokens; tags open a scoped search
+- [x] Home banner from the bitsocialnet/assets polygon mesh; default person-icon avatar
 - [x] In-forum "How sections work" page (`/about/sections`)
 - [x] Profile button and profile page UI (`/profile`): active account, its posts, and a placeholder card for the profile node
 
@@ -24,6 +25,7 @@ Update this file in the same change that completes or reshapes an item. Decision
 - [ ] Author pages from the `previousCommentCid` chain (`/u/:address/c/:cid`), as in Seedit
 - [ ] Port 5chan's and Seedit's browser P2P settings (`p2p-browser-config`) instead of the hooks' defaults
 - [ ] PWA and version metadata, as in 5chan
+- [ ] Full-text search through a search provider instead of filtering loaded feed pages (see [architecture.md](architecture.md#search))
 
 ## M2: Posting
 

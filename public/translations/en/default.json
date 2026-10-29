@@ -51,13 +51,26 @@
     "pinned": "Pinned",
     "untitled": "Untitled topic",
     "newTopic": "New topic",
-    "postingSoon": "Posting is not available yet.",
-    "emptyTag": "No topics tagged {{tag}} yet."
+    "postingSoon": "Posting is not available yet."
   },
   "topic": {
     "loading": "Loading topic…",
     "loadMoreReplies": "Load more replies",
     "reply": "Reply"
+  },
+  "search": {
+    "label": "Search topics",
+    "placeholder": "Search topics, or tag:Release",
+    "title": "Search",
+    "help": "Search topic titles and text across every section. Narrow it with tag:Release, section:bso or community:<address>, or start from a tag below.",
+    "activeFilters": "Search filters",
+    "removeFilter": "Remove {{filter}}",
+    "browseTags": "Browse by tag",
+    "unknownSection": "There is no section called {{section}}.",
+    "nothingToSearchTitle": "Nothing to search yet",
+    "sectionHasNoCommunity": "No community holds this section yet, so it has no topics to search.",
+    "noSectionCommunities": "No section has a community yet. You can still search one community with community:<address>.",
+    "noResults": "No topics match this search."
   },
   "profile": {
     "anonymous": "Anonymous",

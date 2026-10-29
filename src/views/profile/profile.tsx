@@ -34,7 +34,7 @@ export default function Profile() {
         <Banner src={HOME_BANNER_SRC} className='h-24 sm:h-28' />
         <div className='flex flex-col gap-4 px-6 pb-6 sm:flex-row sm:items-start'>
           <div className='relative -mt-10 w-fit rounded-full ring-4 ring-background'>
-            <Avatar name={displayName || address} seed={address} size={80} />
+            <Avatar name={displayName} seed={address} size={80} />
           </div>
           <div className='min-w-0 flex-1 sm:pt-3'>
             <h1 className='break-words font-display text-3xl font-semibold text-muted-foreground'>{displayName || t('profile.anonymous')}</h1>

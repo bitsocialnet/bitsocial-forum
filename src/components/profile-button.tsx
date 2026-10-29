@@ -22,7 +22,7 @@ export default function ProfileButton() {
         )
       }
     >
-      <Avatar name={displayName || address} seed={address} size={32} />
+      <Avatar name={displayName} seed={address} size={32} />
       <span className='hidden max-w-40 truncate font-display text-sm md:inline'>{displayName || t('profile.anonymous')}</span>
     </NavLink>
   );

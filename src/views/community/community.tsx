@@ -1,22 +1,20 @@
 import { useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import CategoryBadge from '../../components/category-badge';
 import NotFoundMessage from '../../components/not-found-message';
 import SortTabs from '../../components/sort-tabs';
 import TagList, { type Tag } from '../../components/tag-list';
 import TopicList from '../../components/topic-list';
 import { getShortAddress, toCommunityIdentifier } from '../../lib/community-identifier';
+import { getSearchPath } from '../../lib/search';
 import { getSectionForCommunity } from '../../lib/sections';
-import { DEFAULT_TOPIC_SORT, parseTopicSort } from '../../lib/sorts';
-import { TAG_SEARCH_PARAM, withTag } from '../../lib/tags';
+import { parseTopicSort, TOPIC_SORTS } from '../../lib/sorts';
 
 // Any community opens by its exact address, whether or not it holds a section.
 export default function Community() {
   const { t } = useTranslation();
   const { communityAddress, sort: sortSegment } = useParams();
-  const [searchParams] = useSearchParams();
-  const tag = searchParams.get(TAG_SEARCH_PARAM) || undefined;
   const community = useCommunity({ community: communityAddress ? toCommunityIdentifier(communityAddress) : undefined });
   const sort = parseTopicSort(sortSegment);
   const section = getSectionForCommunity(communityAddress);
@@ -25,10 +23,9 @@ export default function Community() {
     return <NotFoundMessage />;
   }
 
-  const basePath = `/c/${communityAddress}`;
-  const listPath = sort === DEFAULT_TOPIC_SORT ? basePath : `${basePath}/${sort}`;
-  // The community's own post flair set, or at least the tag being filtered by.
-  const postFlairs: Tag[] = community.flairs?.post ?? (tag ? [{ text: tag }] : []);
+  const postFlairs: Tag[] | undefined = community.flairs?.post;
+  // Tags search within this community.
+  const getTagPath = (tag: string) => getSearchPath({ community: communityAddress, tags: [tag] });
 
   return (
     <>
@@ -41,13 +38,13 @@ export default function Community() {
         <h1 className='mt-2 break-words font-display text-3xl font-semibold text-muted-foreground'>{community.title || getShortAddress(communityAddress)}</h1>
         {community.description ? <p className='mt-1 max-w-3xl text-sm text-muted-foreground'>{community.description}</p> : null}
         <p className='mt-1 break-all text-xs text-muted-foreground/80'>{communityAddress}</p>
-        <TagList tags={postFlairs} getTagPath={(nextTag) => withTag(listPath, nextTag)} activeTag={tag} className='mt-3' />
+        <TagList tags={postFlairs} getTagPath={getTagPath} className='mt-3' />
       </header>
 
       <div className='mb-4'>
-        <SortTabs basePath={basePath} active={sort} tag={tag} />
+        <SortTabs basePath={`/c/${communityAddress}`} active={sort} />
       </div>
-      <TopicList communityAddress={communityAddress} sort={sort} tag={tag} listPath={listPath} />
+      <TopicList communityAddresses={[communityAddress]} sortType={TOPIC_SORTS[sort]} getTagPath={getTagPath} />
     </>
   );
 }

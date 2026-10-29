@@ -28,3 +28,8 @@ export function getSectionForCommunity(address: string | undefined, categories: 
   }
   return undefined;
 }
+
+// Every section's current community, for searches that are not scoped to one section.
+export function getSectionWinners(categories: ForumCategory[] = FORUM_CATEGORIES): string[] {
+  return categories.flatMap((category) => category.sections.map(getSectionWinner).filter((winner): winner is string => Boolean(winner)));
+}

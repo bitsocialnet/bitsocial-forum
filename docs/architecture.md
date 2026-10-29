@@ -60,7 +60,13 @@ The repository stays private until profiles work through Forge RPC.
 ## Routing and deployment
 
 - Hash routing, as in Seedit and 5chan, so one static build works at `forum.bitsocial.net`, on IPFS gateways and from `file://`. Vite builds with a relative base.
-- Routes: `/` categories, `/s/:code/:sort?` section, `/c/:address/:sort?` community, `/c/:address/t/:cid` topic, `/profile` the active account, `/about/sections` how sections work. `:sort` is `new` or `top`; Latest has no segment. A `?tag=` search parameter filters a section or community topic list by flair.
+- Routes: `/` categories, `/s/:code/:sort?` section, `/c/:address/:sort?` community, `/c/:address/t/:cid` topic, `/profile` the active account, `/about/sections` how sections work, `/search?q=` search. `:sort` is `new` or `top`; Latest has no segment.
+
+## Search
+
+Search queries are free text plus `tag:Name` (quoted when it has spaces), `section:code` and `community:address` tokens, as in Discourse's advanced search. A tag clicked anywhere opens a search for it, scoped to the section or community it came from.
+
+Search is client-side for now: it reads the scoped communities' `new` feeds through bitsocial-react-hooks and filters topics whose title or body contains every word and which carry every tag. That only finds topics in pages the client loads, so it gets slower and less complete as sections grow. Full-text search over history needs a search provider, like the ones 5chan reads from `5chan-search-providers.json` in `bitsocialnet/lists`.
 - `forum.bitsocial.net` will be a Cloudflare DNS record pointing at a Vercel project. Following 5chan and Seedit, production should deploy only from GitHub releases, not from every push.
 
 ## Repository, license and design

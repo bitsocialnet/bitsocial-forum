@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-// Generates the wide, short banner images in public/banners/: one per forum section plus the home
-// banner. Each is a low-poly mesh on bitsocial.net's dark stage, tinted with the section color (the
-// same polygon language as bitsocial-web's mesh backgrounds), with a large line icon for what the
-// section is about. Output is deterministic: the mesh is seeded by the section code.
+// Generates the wide, short section banners in public/banners/, one per forum section. Each is a
+// low-poly mesh on bitsocial.net's dark stage, tinted with the section color (the same polygon
+// language as bitsocial-web's mesh backgrounds), with a large line icon for what the section is about.
+// Output is deterministic: the mesh is seeded by the section code. The home banner, home.webp, is not
+// generated: it is banner-mesh-wide-dark from the bitsocialnet/assets repository.
 //
 // Run with `corepack yarn banners:generate` after adding a section or changing its color or icon.
 
@@ -136,21 +137,6 @@ function bannerSvg({ meshColorAt, glows, icon }) {
 `;
 }
 
-function hexToRgb(hex) {
-  const value = Number.parseInt(hex.slice(1), 16);
-  return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
-}
-
-function mixColors(stops, t) {
-  const scaled = Math.min(stops.length - 1, Math.max(0, t * (stops.length - 1)));
-  const index = Math.min(stops.length - 2, Math.floor(scaled));
-  const local = scaled - index;
-  const from = hexToRgb(stops[index]);
-  const to = hexToRgb(stops[index + 1]);
-  const mixed = from.map((channel, channelIndex) => Math.round(channel + (to[channelIndex] - channel) * local));
-  return `#${mixed.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
-}
-
 mkdirSync(outputDir, { recursive: true });
 const sections = FORUM_CATEGORIES.flatMap((category) => category.sections);
 
@@ -166,18 +152,4 @@ for (const section of sections) {
   writeFileSync(path.join(outputDir, `${section.code}.svg`), svg);
 }
 
-// The home banner spans every section color, left to right, under two blue glows.
-const random = createRandom(hashString('home'));
-const homeColors = sections.map((section) => section.color);
-writeFileSync(
-  path.join(outputDir, 'home.svg'),
-  bannerSvg({
-    meshColorAt: () => meshTriangles(random, (t) => mixColors(homeColors, t), WIDTH * 0.62),
-    glows: [
-      { x: WIDTH * 0.62, y: HEIGHT * 0.45, r: WIDTH * 0.42, color: '#2563eb', opacity: 0.42 },
-      { x: WIDTH * 0.95, y: HEIGHT * 0.2, r: WIDTH * 0.3, color: '#1a4fd0', opacity: 0.35 },
-    ],
-  }),
-);
-
-console.log(`Wrote ${sections.length + 1} banners to ${path.relative(process.cwd(), outputDir)}/`);
+console.log(`Wrote ${sections.length} banners to ${path.relative(process.cwd(), outputDir)}/`);
