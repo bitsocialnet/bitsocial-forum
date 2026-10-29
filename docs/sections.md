@@ -1,0 +1,38 @@
+# Sections (draft)
+
+The starting taxonomy, mirrored from `src/data/sections.ts`. Keep the two in sync. Codes become public URLs once the forum launches, so treat them as stable from then on.
+
+Each section needs a community and moderators before launch. Until a section has a candidate community, its page explains that no community holds it yet.
+
+| Category | Code | Section | Scope | Suggested flairs | Candidate community | Moderators |
+|---|---|---|---|---|---|---|
+| Bitsocial | `announcements` | Announcements | Releases, roadmap updates, official news. Owner-only new topics. | Release, Roadmap, News | TBD | TBD |
+| Bitsocial | `general` | General & meta | Bitsocial as a whole, governance, feedback on the forum | Question, Proposal, Feedback, Forum | TBD | TBD |
+| Bitsocial | `bso` | BSO & Bitsocial Chain | BSO token, Bitsocial Chain, .bso names, 5chan Pass | BSO, Chain, Names, 5chan Pass | TBD | TBD |
+| Apps & bots | `seedit` | Seedit | The Reddit-style client | Bug, Feature request, Question, Release | TBD | TBD |
+| Apps & bots | `5chan` | 5chan | The imageboard client, boards, directories | Bug, Feature request, Question, Release, Boards | TBD | TBD |
+| Apps & bots | `ai` | AI & bots | AskWise, image classifier bot, other bots | AskWise, Image classifier, Bots | TBD | TBD |
+| Development | `pkc` | PKC protocol | pkc-js, bitsocial-react-hooks, pubsub, BSIPs | pkc-js, react-hooks, pubsub, BSIP | TBD | TBD |
+| Development | `challenges` | Challenges | spam-blocker, mintpass, ai-moderation-challenge, voucher, captchas | spam-blocker, mintpass, ai-moderation, voucher, captcha | TBD | TBD |
+| Development | `infra` | Infrastructure | Indexer, discovery, previewer, seeder, stats, Forge RPC, bitsocial-cli | indexer, discovery, previewer, seeder, stats, Forge RPC, bitsocial-cli | TBD | TBD |
+| Off-topic | `off-topic` | Off-topic | Everything else | none | TBD | TBD |
+
+## Why these and not one per repository
+
+There are more than sixty Bitsocial repositories. A section for each would leave most of them empty, and the cross-section view would have to load sixty communities. Sections follow who moderates what; repositories and thread types are flairs inside a section. `ai-moderation-challenge`, for example, belongs in Challenges with an `ai-moderation` flair rather than having a second home under AI & bots.
+
+## Setting up a section community
+
+When a section gets its first community, configure it for forum use (see [architecture.md](architecture.md)):
+
+- `features.noNestedReplies: true`
+- `features.requirePostFlairs: true`, with the section's flairs in `community.flairs.post`
+- `settings.pages`: `active` preloaded for posts, `old` preloaded for replies
+- Anti-spam challenges suited to the section (for example spam-blocker or mintpass)
+- Announcements only: a challenge that rejects new topics from anyone but the owners, while still accepting replies
+
+Then add its address as the section's first candidate in `src/data/sections.ts` and in the table above.
+
+## Adding or changing a section
+
+Propose it in the General & meta section (or as an issue until the forum is live) with the code, scope, flairs and who would moderate it. Prefer extending an existing section with a flair over adding a new one.

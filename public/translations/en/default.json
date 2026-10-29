@@ -1,0 +1,73 @@
+{
+  "header": {
+    "openSidebar": "Open sidebar",
+    "closeSidebar": "Close sidebar",
+    "linksLabel": "Bitsocial links",
+    "docs": "Docs",
+    "bitsocial": "Bitsocial"
+  },
+  "theme": {
+    "switchToLight": "Switch to light theme",
+    "switchToDark": "Switch to dark theme"
+  },
+  "sidebar": {
+    "label": "Forum navigation",
+    "categories": "Categories",
+    "resources": "Resources",
+    "howSectionsWork": "How sections work",
+    "docs": "Docs",
+    "bitsocial": "Bitsocial"
+  },
+  "categories": {
+    "title": "Bitsocial Forum",
+    "description": "Discussion for every Bitsocial project. Each section is held by a community that others can replace, so the forum has no global admins.",
+    "category": "Category",
+    "latest": "Latest"
+  },
+  "section": {
+    "notFound": "Section not found",
+    "heldBy": "Held by",
+    "noCommunityShort": "No community yet",
+    "noCommunityTitle": "No community holds this section yet",
+    "noCommunityDescription": "A section opens whichever community ranks first for it. Once a community is listed as a candidate, its topics appear here.",
+    "howSectionsWork": "How sections work",
+    "otherCommunities": "Other communities in this section"
+  },
+  "community": {
+    "eyebrow": "Community"
+  },
+  "topics": {
+    "sortLabel": "Sort topics",
+    "sort": {
+      "latest": "Latest",
+      "new": "New",
+      "top": "Top"
+    },
+    "topic": "Topic",
+    "replies": "Replies",
+    "activity": "Activity",
+    "loading": "Loading topics…",
+    "empty": "No topics yet.",
+    "loadMore": "Load more topics",
+    "pinned": "Pinned",
+    "untitled": "Untitled topic",
+    "newTopic": "New topic",
+    "postingSoon": "Posting is not available yet."
+  },
+  "topic": {
+    "loading": "Loading topic…",
+    "loadMoreReplies": "Load more replies",
+    "reply": "Reply"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This page does not exist on the Bitsocial Forum.",
+    "backToCategories": "Back to categories"
+  },
+  "footer": {
+    "docs": "Docs",
+    "bitsocial": "Bitsocial",
+    "stats": "Network stats",
+    "byForge": "by Bitsocial Forge Inc."
+  }
+}

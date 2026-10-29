@@ -1,0 +1,206 @@
+/* Tokens, fonts and surfaces from bitsocial-web (chain/src/index.css), so the forum is themed like
+   bitsocial.net; the page structure is Discourse's. Keep Exo local and blocking so headings never
+   flash from a fallback face. */
+@font-face {
+  font-family: 'Exo';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: block;
+  src: url('/fonts/exo/latin-ext.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0,
+    U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Exo';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: block;
+  src: url('/fonts/exo/latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF,
+    U+FFFD;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    min-height: 100%;
+    background-color: hsl(var(--background));
+    overflow-x: hidden;
+  }
+  body {
+    @apply bg-background text-foreground font-body;
+    min-height: 100%;
+    letter-spacing: 0.01em;
+    overflow-x: hidden;
+    touch-action: manipulation;
+  }
+  #root {
+    min-height: 100%;
+    background-color: hsl(var(--background));
+  }
+  button,
+  [role='button'] {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Keyboard focus only: blue ring + glow, as on bitsocial.net. */
+  button:focus:not(:focus-visible),
+  [role='button']:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
+  button:focus-visible,
+  [role='button']:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-app-ring);
+  }
+  :where(a:focus-visible) {
+    border-radius: 0.25rem;
+  }
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 97%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 42%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --radius: 1.25rem;
+    --glass-border-subtle: rgba(68, 74, 88, 0.16);
+    --frosted-surface-border: rgba(70, 70, 70, 0.14);
+    --frosted-surface-fill: linear-gradient(rgba(170, 182, 200, 0.133), rgba(144, 160, 185, 0.1), rgba(93, 117, 155, 0.067));
+    --glass-card-fill: linear-gradient(rgba(170, 182, 200, 0.133), rgba(144, 160, 185, 0.1), rgba(93, 117, 155, 0.067));
+    --sheet-surface: 0 0% 100%;
+    --focus-app-blue: rgb(37 99 235);
+    --focus-app-glow: 0 0 0 4px rgba(37, 99, 235, 0.18);
+    --focus-app-ring: 0 0 0 2px rgb(37 99 235 / 0.92), 0 0 0 5px rgba(37, 99, 235, 0.16);
+  }
+  .dark {
+    color-scheme: dark;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 93%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 93%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 93%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 93%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 68%;
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 93%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 27%;
+    --input: 0 0% 27%;
+    --ring: 0 0% 83.1%;
+    --glass-border-subtle: rgba(232, 238, 247, 0.14);
+    --frosted-surface-border: rgba(232, 238, 247, 0.14);
+    --frosted-surface-fill: linear-gradient(rgba(188, 200, 214, 0.045), rgba(118, 128, 140, 0.06), rgba(52, 58, 68, 0.075));
+    --glass-card-fill: linear-gradient(rgba(222, 244, 255, 0.1), rgba(171, 188, 197, 0.11), rgba(120, 135, 148, 0.14));
+    --sheet-surface: 0 0% 9%;
+  }
+}
+
+/* bitsocial-web surfaces (chain/src/index.css), applied to Discourse's layout: a frosted header,
+   glass panels for topic tables and posts, a glass footer, and blue for selection. */
+@layer utilities {
+  .frosted-header {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .frosted-header::before,
+  .footer-glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    -webkit-backdrop-filter: blur(var(--frosted-surface-blur, 10px));
+    backdrop-filter: blur(var(--frosted-surface-blur, 10px));
+    z-index: -2;
+  }
+
+  .frosted-header::after,
+  .footer-glass::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: -1;
+    background: var(--frosted-surface-fill);
+  }
+
+  .frosted-header::after {
+    border-bottom: 1px solid var(--frosted-surface-border);
+  }
+
+  .glass-panel {
+    @apply rounded-3xl;
+    position: relative;
+    isolation: isolate;
+    border: 1px solid var(--glass-border-subtle);
+    background: var(--glass-card-fill);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+
+  .footer-glass {
+    @apply rounded-t-[2rem];
+    position: relative;
+    isolation: isolate;
+    border: 1px solid var(--frosted-surface-border);
+    border-bottom: none;
+  }
+
+  /* The mobile sidebar drawer, as bitsocial.net's slide-over sheets. */
+  .sheet-glass {
+    background: hsl(var(--sheet-surface));
+    border-inline-end: 1px solid var(--frosted-surface-border);
+    box-shadow: 8px 0 40px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Selected filters and sidebar items: blue-tinted border and fill with the selected-filter glow. */
+  .blue-selected {
+    border-color: rgb(26 79 208 / 0.45);
+    background-color: rgb(26 79 208 / 0.12);
+    box-shadow: 0 0 24px rgba(37, 99, 235, 0.12);
+  }
+
+  .dark .blue-selected {
+    border-color: rgb(37 99 235 / 0.55);
+    background-color: rgb(26 79 208 / 0.18);
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    .glass-panel {
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+    }
+    .footer-glass {
+      --frosted-surface-blur: 4px;
+    }
+  }
+}

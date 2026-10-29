@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="The Bitsocial Forum: discussion of every Bitsocial project, on a forum with no global admins." />
+    <link rel="icon" href="./favicon.ico" />
+    <link rel="icon" type="image/png" sizes="96x96" href="./favicon-96.png" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="preload" href="./fonts/exo/latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <title>Bitsocial Forum</title>
+    <!-- Apply the saved theme before first paint; the theme store keeps it in sync afterwards. -->
+    <script>
+      try {
+        var saved = JSON.parse(localStorage.getItem('bitsocial-forum-theme') || '{}').state;
+        var theme = saved && saved.theme ? saved.theme : matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        if (theme === 'light') document.documentElement.classList.remove('dark');
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <noscript>Bitsocial Forum needs JavaScript: it loads communities peer-to-peer in your browser.</noscript>
+    <div id="root"></div>
+    <script type="module" src="./src/bootstrap.ts"></script>
+  </body>
+</html>
