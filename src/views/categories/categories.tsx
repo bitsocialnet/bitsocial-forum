@@ -1,9 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import Banner from '../../components/banner';
 import LatestTopic from '../../components/latest-topic';
 import TagList from '../../components/tag-list';
 import { FORUM_CATEGORIES } from '../../data/sections';
+import { HOME_BANNER_SRC } from '../../lib/banners';
 import { getSectionWinner } from '../../lib/sections';
+import { withTag } from '../../lib/tags';
 
 const columnHeadingClassName = 'py-3 text-start font-display text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground';
 
@@ -15,8 +18,18 @@ export default function Categories() {
   return (
     <>
       <header className='mb-8'>
-        <h1 className='font-display text-3xl font-semibold text-muted-foreground md:text-4xl'>{t('categories.title')}</h1>
-        <p className='mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground'>{t('categories.description')}</p>
+        <Banner src={HOME_BANNER_SRC} className='glass-panel h-40 sm:h-52'>
+          <p className='font-display text-xs font-semibold uppercase tracking-[0.18em] text-silver-bright/80 sm:text-sm'>{t('categories.welcome')}</p>
+          <h1 className='mt-1 bg-gradient-to-r from-[#8ab4ff] via-silver-bright to-[#5b8cff] bg-clip-text pb-1 font-display text-4xl font-semibold text-transparent sm:text-6xl'>
+            Bitsocial Forum
+          </h1>
+        </Banner>
+        <p className='mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground'>
+          {t('categories.description')}{' '}
+          <Link to='/about/sections' className='text-blue-glow hover:underline'>
+            {t('categories.howSectionsWork')}
+          </Link>
+        </p>
       </header>
 
       <div className='flex flex-col gap-8'>
@@ -47,7 +60,7 @@ export default function Categories() {
                             {section.title}
                           </Link>
                           <p className='mt-1 text-sm leading-relaxed text-muted-foreground'>{section.description}</p>
-                          <TagList tags={section.flairs.map((text) => ({ text }))} className='mt-2.5' />
+                          <TagList tags={section.flairs.map((text) => ({ text }))} getTagPath={(tag) => withTag(`/s/${section.code}`, tag)} className='mt-2.5' />
                         </td>
                         <td className='py-4 pe-6 ps-4 max-md:hidden'>
                           {winner ? <LatestTopic communityAddress={winner} /> : <span className='text-xs text-muted-foreground'>{t('section.noCommunityShort')}</span>}

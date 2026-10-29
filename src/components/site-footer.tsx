@@ -30,8 +30,9 @@ export default function SiteFooter() {
           target='_blank'
           rel='noopener noreferrer'
           dir='ltr'
-          className='font-display tracking-wide text-muted-foreground/80 transition-colors hover:text-foreground'
+          className='inline-flex items-center gap-2 font-display tracking-wide text-muted-foreground/80 transition-colors hover:text-foreground'
         >
+          <img src='./bitsocial-forge-logo.svg' width={18} height={18} alt='' aria-hidden='true' className='h-[18px] w-[18px]' />
           {t('footer.byForge')}
         </a>
       </div>

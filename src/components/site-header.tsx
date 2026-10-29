@@ -1,12 +1,11 @@
-import { ArrowUpRight, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { BITSOCIAL_URL, DOCS_URL } from '../lib/site';
+import ProfileButton from './profile-button';
 import ThemeToggle from './theme-toggle';
 
 // Discourse's full-width header in bitsocial.net's topbar material: frosted, Exo labels, 44px controls.
-const navLinkClassName = 'inline-flex h-11 items-center gap-0.5 px-2 font-display text-base text-muted-foreground transition-colors hover:text-foreground';
-
+// Forum functions sit on the right; site links live in the sidebar and footer.
 export default function SiteHeader({ isSidebarOpen, onToggleSidebar }: { isSidebarOpen: boolean; onToggleSidebar: () => void }) {
   const { t } = useTranslation();
 
@@ -19,7 +18,7 @@ export default function SiteHeader({ isSidebarOpen, onToggleSidebar }: { isSideb
           aria-label={isSidebarOpen ? t('header.closeSidebar') : t('header.openSidebar')}
           aria-expanded={isSidebarOpen}
           aria-controls='forum-sidebar'
-          className='inline-flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-border/70 hover:text-foreground lg:hidden'
+          className='blue-hover inline-flex h-11 w-11 items-center justify-center rounded-full border border-transparent text-muted-foreground lg:hidden'
         >
           {isSidebarOpen ? <X className='h-5 w-5' /> : <Menu className='h-5 w-5' />}
         </button>
@@ -27,20 +26,9 @@ export default function SiteHeader({ isSidebarOpen, onToggleSidebar }: { isSideb
           <img src='./logo-small.png' width={32} height={32} alt='' aria-hidden='true' className='h-8 w-8 transition-[filter] group-hover:brightness-110' />
           <span className='font-display text-xl text-muted-foreground transition-colors group-hover:text-foreground'>Bitsocial Forum</span>
         </Link>
-        <nav aria-label={t('header.linksLabel')} className='ms-auto hidden items-center gap-3 md:flex'>
-          {[
-            { label: t('header.docs'), href: DOCS_URL },
-            { label: t('header.bitsocial'), href: BITSOCIAL_URL },
-          ].map((link) => (
-            <a key={link.href} href={link.href} target='_blank' rel='noopener noreferrer' className={navLinkClassName}>
-              {link.label}
-              <ArrowUpRight aria-hidden className='h-3.5 w-3.5 opacity-70 rtl:-scale-x-100' />
-            </a>
-          ))}
-          <div className='mx-1 h-4 w-px bg-border' />
-        </nav>
-        <div className='flex items-center max-md:ms-auto'>
+        <div className='ms-auto flex items-center gap-1.5'>
           <ThemeToggle />
+          <ProfileButton />
         </div>
       </div>
     </header>

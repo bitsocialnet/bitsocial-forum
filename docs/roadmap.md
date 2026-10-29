@@ -10,6 +10,10 @@ Update this file in the same change that completes or reshapes an item. Decision
 - [x] Draft section taxonomy with colors and suggested flairs ([sections.md](sections.md))
 - [x] Read any community by address, live over P2P in the browser
 - [x] Docs: README, architecture, sections, roadmap, PRODUCT, DESIGN
+- [x] Generated banners for the home page and every section
+- [x] Clickable tags that filter a topic list (`?tag=`)
+- [x] In-forum "How sections work" page (`/about/sections`)
+- [x] Profile button and profile page UI (`/profile`): active account, its posts, and a placeholder card for the profile node
 
 ## M1: Readable forum
 
@@ -38,6 +42,7 @@ Update this file in the same change that completes or reshapes an item. Decision
 
 - [ ] Desktop build (Electron, as in 5chan) whose built-in node hosts the user's profile community
 - [ ] Forge RPC hosted profiles, created on a user's first post, with export to a self-hosted node
+- [ ] Wire the profile page's "Create profile node" button to Forge RPC or the desktop node
 - [ ] `/u/:name` profile pages from author communities, with crossposted history
 
 ## M5: Launch

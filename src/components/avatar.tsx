@@ -10,8 +10,11 @@ function hashString(value: string): number {
   return Math.abs(hash);
 }
 
+// Every Bitsocial address starts with the same peer ID prefix, so skip it or every anonymous avatar reads "1".
+const PEER_ID_PREFIX = /^12D3KooW/;
+
 export default function Avatar({ name, seed, size = 40 }: { name?: string; seed?: string; size?: number }) {
-  const letter = (name || seed || '?').trim().charAt(0).toUpperCase() || '?';
+  const letter = (name || seed || '?').trim().replace(PEER_ID_PREFIX, '').charAt(0).toUpperCase() || '?';
 
   return (
     <span

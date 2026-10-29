@@ -2,23 +2,30 @@ import { useFeed } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
 import { toCommunityIdentifier } from '../../lib/community-identifier';
 import { TOPIC_SORTS, type TopicSort } from '../../lib/sorts';
+import { getTagFeedFilter } from '../../lib/tags';
 import { Button } from '../button';
 import TopicRow from './topic-row';
 
 const TOPICS_PER_PAGE = 30;
 
-// Discourse's topic table inside a bitsocial.net glass panel.
-export default function TopicList({ communityAddress, sort }: { communityAddress: string; sort: TopicSort }) {
+// Discourse's topic table inside a bitsocial.net glass panel. `listPath` is the page showing the list,
+// so a row's tags filter that same list.
+export default function TopicList({ communityAddress, sort, tag, listPath }: { communityAddress: string; sort: TopicSort; tag?: string; listPath: string }) {
   const { t } = useTranslation();
   const { feed, hasMore, loadMore } = useFeed({
     communities: [toCommunityIdentifier(communityAddress)],
     sortType: TOPIC_SORTS[sort],
     postsPerPage: TOPICS_PER_PAGE,
+    filter: tag ? getTagFeedFilter(tag) : undefined,
   });
   const now = Date.now();
 
   if (feed.length === 0) {
-    return <p className='glass-panel px-6 py-10 text-center text-sm text-muted-foreground'>{hasMore ? t('topics.loading') : t('topics.empty')}</p>;
+    return (
+      <p className='glass-panel px-6 py-10 text-center text-sm text-muted-foreground'>
+        {hasMore ? t('topics.loading') : tag ? t('topics.emptyTag', { tag }) : t('topics.empty')}
+      </p>
+    );
   }
 
   return (
@@ -40,7 +47,7 @@ export default function TopicList({ communityAddress, sort }: { communityAddress
           </thead>
           <tbody className='[&>tr:last-child]:border-b-0'>
             {feed.map((comment) => (
-              <TopicRow key={comment.cid} comment={comment} now={now} />
+              <TopicRow key={comment.cid} comment={comment} now={now} listPath={listPath} activeTag={tag} />
             ))}
           </tbody>
         </table>

@@ -5,9 +5,11 @@ import Sidebar from './components/sidebar';
 import SiteFooter from './components/site-footer';
 import SiteHeader from './components/site-header';
 import { cn } from './lib/utils';
+import AboutSections from './views/about-sections';
 import Categories from './views/categories';
 import Community from './views/community';
 import NotFound from './views/not-found';
+import Profile from './views/profile';
 import Section from './views/section';
 import Topic from './views/topic';
 
@@ -40,6 +42,8 @@ export default function App() {
           <main className='flex-1 px-4 py-8 lg:px-8'>
             <Routes>
               <Route path='/' element={<Categories />} />
+              <Route path='/about/sections' element={<AboutSections />} />
+              <Route path='/profile' element={<Profile />} />
               <Route path='/s/:sectionCode/:sort?' element={<Section />} />
               <Route path='/c/:communityAddress/t/:commentCid' element={<Topic />} />
               <Route path='/c/:communityAddress/:sort?' element={<Community />} />

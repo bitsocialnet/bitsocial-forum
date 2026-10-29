@@ -194,6 +194,24 @@
     background-color: rgb(26 79 208 / 0.18);
   }
 
+  /* Hover for sidebar items and icon buttons: an eased blue tint instead of a grey fill. */
+  .blue-hover {
+    transition:
+      background-color 200ms ease-out,
+      border-color 200ms ease-out,
+      color 200ms ease-out;
+  }
+
+  .blue-hover:hover {
+    border-color: rgb(37 99 235 / 0.3);
+    background-color: rgb(26 79 208 / 0.08);
+    color: hsl(var(--foreground));
+  }
+
+  .dark .blue-hover:hover {
+    background-color: rgb(26 79 208 / 0.16);
+  }
+
   @media (hover: none) and (pointer: coarse) {
     .glass-panel {
       -webkit-backdrop-filter: blur(4px);

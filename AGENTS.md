@@ -33,7 +33,7 @@ For an unexpected repo-specific issue, tell the contributor and continue indepen
 |---|---|
 | Visual design, layout, CSS, or themes | Read [DESIGN.md](DESIGN.md); review against its Do/Don't list |
 | Files under `src/` or `scripts/` | Read the directory's `AGENTS.md` |
-| Sections, directories, or section data | Read [docs/architecture.md](docs/architecture.md) and keep [docs/sections.md](docs/sections.md) in sync with `src/data/sections.ts` |
+| Sections, directories, or section data | Read [docs/architecture.md](docs/architecture.md) and keep [docs/sections.md](docs/sections.md) in sync with `src/data/sections.ts`; run `yarn banners:generate` after adding a section or changing its color |
 | Code or automation changed | Select affected checks using [verification.md](docs/agent-playbooks/verification.md); use `agent:verify` for integration/build changes or an explicitly requested full pass |
 | React state, effects, data flow, or rendering performance changed | Review relevant React guidance; use advisory `yarn doctor` for newly introduced diagnostics |
 | UI behavior/layout changed | Verify the affected flow; select browsers/viewports using [verification.md](docs/agent-playbooks/verification.md) |

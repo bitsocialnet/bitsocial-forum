@@ -11,6 +11,7 @@
     "start": "node scripts/start-dev.js",
     "build": "vite build",
     "preview": "vite preview",
+    "banners:generate": "node scripts/generate-section-banners.mjs",
     "test": "vitest --maxWorkers=4",
     "type-check": "tsc --noEmit",
     "lint": "oxlint --deny-warnings src && corepack yarn boundaries",

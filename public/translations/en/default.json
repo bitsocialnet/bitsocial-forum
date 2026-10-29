@@ -2,9 +2,7 @@
   "header": {
     "openSidebar": "Open sidebar",
     "closeSidebar": "Close sidebar",
-    "linksLabel": "Bitsocial links",
-    "docs": "Docs",
-    "bitsocial": "Bitsocial"
+    "profile": "Your profile"
   },
   "theme": {
     "switchToLight": "Switch to light theme",
@@ -19,8 +17,9 @@
     "bitsocial": "Bitsocial"
   },
   "categories": {
-    "title": "Bitsocial Forum",
+    "welcome": "Welcome to",
     "description": "Discussion for every Bitsocial project. Each section is held by a community that others can replace, so the forum has no global admins.",
+    "howSectionsWork": "How sections work",
     "category": "Category",
     "latest": "Latest"
   },
@@ -52,12 +51,64 @@
     "pinned": "Pinned",
     "untitled": "Untitled topic",
     "newTopic": "New topic",
-    "postingSoon": "Posting is not available yet."
+    "postingSoon": "Posting is not available yet.",
+    "emptyTag": "No topics tagged {{tag}} yet."
   },
   "topic": {
     "loading": "Loading topic…",
     "loadMoreReplies": "Load more replies",
     "reply": "Reply"
+  },
+  "profile": {
+    "anonymous": "Anonymous",
+    "postCount_one": "{{count}} post",
+    "postCount_other": "{{count}} posts",
+    "nodeTitle": "Profile node",
+    "nodeStatus": "Not created",
+    "nodeDescription": "Your profile node is a small community that belongs to you: it keeps a copy of everything you post, gives you a permanent profile page, and lets others follow you. Only you can post to it.",
+    "nodeHosting": "Hosted for you by Forge RPC, or on your own node with bitsocial-cli. You can move it any time without changing its address.",
+    "nodeLink": "Your profile link will look like {{link}}",
+    "createNode": "Create profile node",
+    "nodeComingSoon": "Profile nodes are not available yet.",
+    "postsTitle": "Your posts",
+    "noPosts": "You have not posted from this account yet.",
+    "topic": "Topic",
+    "reply": "Reply",
+    "pending": "Pending"
+  },
+  "aboutSections": {
+    "eyebrow": "About the forum",
+    "title": "How sections work",
+    "intro": "Bitsocial Forum is split into sections, one for each area of Bitsocial: the protocol, the BSO token and Bitsocial Chain, each app, the anti-spam challenges, the bots and the infrastructure. This page explains what a section is and who runs it.",
+    "community": {
+      "title": "Each section is a community",
+      "body": "A section's topics live in a Bitsocial community: a peer-to-peer space with its own moderators, rules and anti-spam challenges. The forum shows that community's topics under the section's name. The forum itself has no admins: it only decides which sections exist."
+    },
+    "whoRuns": {
+      "title": "Who runs a section",
+      "body": "The moderators of the community that holds it, and only for that section. The people who maintain pkc-js can run the protocol section without any say over the 5chan section, and each section sets its own rules, tags and anti-spam settings."
+    },
+    "whyNotOne": {
+      "title": "Why not one community for the whole forum",
+      "body": "A single community would make whoever holds its key the admin of every discussion, which is what Bitsocial is built to avoid. Separate communities keep each project in charge of its own space, and keep the rest of the forum working if one of them goes offline."
+    },
+    "changingHands": {
+      "title": "How a section changes hands",
+      "body": "Every section has a ranked list of candidate communities, and the top one is the one you see at the section's address. Today the list is kept by the forum's maintainers; the plan is for votes to rank candidates, the way 5chan's boards are ranked. If another community takes over a section, nothing is deleted: the previous community keeps its address, topics and members, and links to its topics keep working."
+    },
+    "startCommunity": {
+      "title": "Starting a community for a section",
+      "body": "Anyone can create a Bitsocial community, for example with Seedit or bitsocial-cli, and ask for it to be listed as a candidate for a section. Until voting exists, propose it in the General & meta section.",
+      "link": "Go to General & meta"
+    },
+    "tags": {
+      "title": "Tags inside a section",
+      "body": "Topics are tagged with the project they are about or the kind of topic, such as a question, a bug or a proposal. Click a tag to see only those topics."
+    },
+    "learnMore": "Learn more",
+    "learnMoreBody": "Sections are built on directories, the design Seedit and 5chan use to let communities compete for board names. The Bitsocial docs explain the technical side.",
+    "directoriesDocs": "Directories",
+    "discoveryDocs": "Content discovery"
   },
   "notFound": {
     "title": "Page not found",

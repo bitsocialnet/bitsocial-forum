@@ -35,12 +35,13 @@ Tokens and surfaces are in `src/index.css`, copied from bitsocial-web's chain si
 
 ## Structure (from Discourse)
 
-- **Header:** full width, sticky, 4rem. Logo and "Bitsocial Forum" on the left; Docs and Bitsocial links, then the theme toggle, on the right. Below `lg` a menu button opens the sidebar.
-- **Sidebar:** 16rem, sticky from `lg`, a drawer below it. Order: Categories page, each category group with its sections (color square plus name), then Resources.
+- **Header:** full width, sticky, 4rem. Logo and "Bitsocial Forum" on the left; forum functions on the right: the theme toggle and the profile button (avatar and name, linking to `/profile`). Site links live in the sidebar and footer, not the header. Below `lg` a menu button opens the sidebar.
+- **Sidebar:** 16rem, sticky from `lg`, a drawer below it. Order: Categories page, each category group with its sections (color square plus name), then Resources (the in-forum "How sections work" page first, then external docs).
+- **Banners:** wide, short images at the top of the home page (with "Welcome to Bitsocial Forum") and of every section page (with the section name). They are generated SVGs in `public/banners/`; see below.
 - **Categories page:** one table per category group, columns Category and Latest. Each section row has a 4px left edge in the section color, its name, description and flairs. Latest hides below `md`.
 - **Topic lists:** Latest / New / Top pills above a table with Topic, Replies and Activity. Replies hides below `sm`. Activity uses compact ages (`5m`, `3h`, `2d`, then a date) with the full date in a tooltip.
 - **Topics:** oldest first, no nesting. Each post has a 44px letter avatar column, then name, short address and age, then the body. Posting controls sit under the thread.
-- **Footer:** one row of links with "by Bitsocial Forge Inc." at bottom right.
+- **Footer:** one row of links with the Bitsocial Forge logo and "by Bitsocial Forge Inc." at bottom right.
 
 ## Theme (from bitsocial-web)
 
@@ -50,8 +51,10 @@ Tokens and surfaces are in `src/index.css`, copied from bitsocial-web's chain si
 - **Drawer:** the mobile sidebar uses `sheet-glass`, like bitsocial.net's slide-over sheets.
 - **Headings and labels:** Exo 600 in `muted-foreground` grey with near-zero tracking for page headings; uppercase Exo labels with 0.18em tracking for category groups and eyebrows. Topic titles and posts stay in Manrope for reading.
 - **Controls:** pills. The primary button is Protocol Blue with Silver Bright text, brightening to Electric Blue on hover. Outline buttons and nav pills have a 1px border that turns Electric Blue on hover.
-- **Selection:** `blue-selected` (blue-tinted border and fill with the selected-filter glow) marks the active nav pill and sidebar item.
-- **Tags:** pkc flairs as small 1px-border chips; a community's flair colors win when set.
+- **Selection:** `blue-selected` (blue-tinted border and fill with the selected-filter glow) marks the active nav pill, sidebar item, tag and profile button.
+- **Hover:** `blue-hover` gives sidebar items, icon buttons, pills and tags an eased (200ms) blue tint and border. No grey hover fills.
+- **Tags:** pkc flairs as small 1px-border chips. Each links to the topic list it belongs to filtered by that tag (`?tag=`); the active tag links back to the unfiltered list. A community's flair colors win when set.
+- **Banners:** `scripts/generate-section-banners.mjs` draws a low-poly mesh on the dark stage in the section color, with a glow and a large lucide line icon on the right; the home banner blends every section color under blue glows. Banners are always dark, so overlay text is Silver Bright over a left-to-right black gradient. Run `yarn banners:generate` after adding a section or changing its color or icon.
 - **Links:** foreground or muted text that turns Electric Blue on hover. Keyboard focus uses the shared blue ring.
 
 ## Do

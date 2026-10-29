@@ -9,6 +9,7 @@ import Post from '../../components/post';
 import TagList from '../../components/tag-list';
 import { getShortAddress, toCommunityIdentifier } from '../../lib/community-identifier';
 import { getSectionForCommunity } from '../../lib/sections';
+import { withTag } from '../../lib/tags';
 
 // A topic reads top to bottom, oldest reply first and without nesting, like Discourse.
 export default function Topic() {
@@ -37,7 +38,7 @@ export default function Topic() {
               {getShortAddress(communityAddress)}
             </Link>
           )}
-          <TagList tags={comment.flairs} />
+          <TagList tags={comment.flairs} getTagPath={(tag) => withTag(section ? `/s/${section.code}` : `/c/${communityAddress}`, tag)} />
         </div>
       </header>
 

@@ -60,7 +60,7 @@ The repository stays private until profiles work through Forge RPC.
 ## Routing and deployment
 
 - Hash routing, as in Seedit and 5chan, so one static build works at `forum.bitsocial.net`, on IPFS gateways and from `file://`. Vite builds with a relative base.
-- Routes: `/` categories, `/s/:code/:sort?` section, `/c/:address/:sort?` community, `/c/:address/t/:cid` topic. `:sort` is `new` or `top`; Latest has no segment.
+- Routes: `/` categories, `/s/:code/:sort?` section, `/c/:address/:sort?` community, `/c/:address/t/:cid` topic, `/profile` the active account, `/about/sections` how sections work. `:sort` is `new` or `top`; Latest has no segment. A `?tag=` search parameter filters a section or community topic list by flair.
 - `forum.bitsocial.net` will be a Cloudflare DNS record pointing at a Vercel project. Following 5chan and Seedit, production should deploy only from GitHub releases, not from every push.
 
 ## Repository, license and design

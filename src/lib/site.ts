@@ -4,6 +4,8 @@ export const DOCS_URL = 'https://docs.bitsocial.net' as const;
 
 export const DIRECTORIES_DOCS_URL = 'https://docs.bitsocial.net/directories' as const;
 
+export const CONTENT_DISCOVERY_DOCS_URL = 'https://docs.bitsocial.net/content-discovery' as const;
+
 export const STATS_URL = 'https://stats.bitsocial.net' as const;
 
 export const BITSOCIAL_FORGE_URL = 'https://bitsocialforge.com' as const;
