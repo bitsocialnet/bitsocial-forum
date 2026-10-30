@@ -4,7 +4,7 @@ import Banner from '../../components/banner';
 import LatestTopic from '../../components/latest-topic';
 import TagList from '../../components/tag-list';
 import { FORUM_CATEGORIES } from '../../data/sections';
-import { HOME_BANNER_SRC } from '../../lib/banners';
+import { HOME_BANNER } from '../../lib/banners';
 import { getSearchPath } from '../../lib/search';
 import { getSectionWinner } from '../../lib/sections';
 
@@ -18,9 +18,11 @@ export default function Categories() {
   return (
     <>
       <header className='mb-8'>
-        <Banner src={HOME_BANNER_SRC} className='glass-panel h-40 sm:h-52'>
-          <p className='font-display text-xs font-semibold uppercase tracking-[0.18em] text-silver-bright/80 sm:text-sm'>{t('categories.welcome')}</p>
-          <h1 className='mt-1 font-display text-4xl font-semibold text-silver-bright sm:text-6xl'>Bitsocial Forum</h1>
+        <Banner sources={HOME_BANNER} className='glass-panel h-40 sm:h-52'>
+          <p className='font-display text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-sm dark:text-silver-bright/80'>
+            {t('categories.welcome')}
+          </p>
+          <h1 className='mt-1 font-display text-4xl font-semibold text-foreground sm:text-6xl dark:text-silver-bright'>Bitsocial Forum</h1>
         </Banner>
         <p className='mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground'>
           {t('categories.description')}{' '}

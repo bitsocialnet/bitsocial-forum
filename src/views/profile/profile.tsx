@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import Avatar from '../../components/avatar';
 import Banner from '../../components/banner';
 import { Button } from '../../components/button';
-import { HOME_BANNER_SRC } from '../../lib/banners';
+import { HOME_BANNER } from '../../lib/banners';
 import { getShortAddress } from '../../lib/community-identifier';
 import { formatFullDate, formatShortAge } from '../../lib/time';
 
@@ -31,7 +31,7 @@ export default function Profile() {
   return (
     <div className='flex max-w-3xl flex-col gap-6'>
       <section className='glass-panel overflow-hidden'>
-        <Banner src={HOME_BANNER_SRC} className='h-24 sm:h-28' />
+        <Banner sources={HOME_BANNER} className='h-24 sm:h-28' />
         <div className='flex flex-col gap-4 px-6 pb-6 sm:flex-row sm:items-start'>
           <div className='relative -mt-10 w-fit rounded-full ring-4 ring-background'>
             <Avatar name={displayName} seed={address} size={80} />

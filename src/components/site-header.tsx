@@ -19,7 +19,7 @@ export default function SiteHeader({ isSidebarOpen, onToggleSidebar }: { isSideb
           aria-label={isSidebarOpen ? t('header.closeSidebar') : t('header.openSidebar')}
           aria-expanded={isSidebarOpen}
           aria-controls='forum-sidebar'
-          className='blue-hover inline-flex h-11 w-11 items-center justify-center rounded-full border border-transparent text-muted-foreground lg:hidden'
+          className='blue-hover inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-black/[0.04] text-muted-foreground lg:hidden dark:border-transparent dark:bg-transparent'
         >
           {isSidebarOpen ? <X className='h-5 w-5' /> : <Menu className='h-5 w-5' />}
         </button>

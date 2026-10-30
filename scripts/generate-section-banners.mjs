@@ -2,8 +2,10 @@
 // Generates the wide, short section banners in public/banners/, one per forum section. Each is a
 // low-poly mesh on bitsocial.net's dark stage, tinted with the section color (the same polygon
 // language as bitsocial-web's mesh backgrounds), with a large line icon for what the section is about.
-// Output is deterministic: the mesh is seeded by the section code. The home banner, home.webp, is not
-// generated: it is banner-mesh-wide-dark from the bitsocialnet/assets repository.
+// Output is deterministic: the mesh is seeded by the section code, so the dark (`<code>.svg`) and
+// light (`<code>-light.svg`) variants share their shape. The home banners, home.webp and
+// home-light.webp, are not generated: they are banner-mesh-wide-dark and -light from the
+// bitsocialnet/assets repository.
 //
 // Run with `corepack yarn banners:generate` after adding a section or changing its color or icon.
 
@@ -21,6 +23,13 @@ const COLUMNS = 17;
 const ROWS = 5;
 const ICON_SCALE = 9;
 const outputDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public', 'banners');
+
+// bitsocial.net's dark stage and light surface. The light variant tones the fill and glow down and
+// strengthens the lines, which carry the color on a light background.
+const THEMES = [
+  { suffix: '', stage: ['#0c0c10', '#121218'], glowOpacity: 0.38, fillScale: 1, strokeScale: 1 },
+  { suffix: '-light', stage: ['#f8fafc', '#eef1f6'], glowOpacity: 0.22, fillScale: 0.7, strokeScale: 1.8 },
+];
 
 // What each section is about, as a lucide icon.
 const SECTION_ICONS = {
@@ -75,7 +84,7 @@ function meshPoints(random) {
 }
 
 // Triangles get brighter toward the glow center and fade toward the left, where text sits.
-function meshTriangles(random, colorAt, glowX) {
+function meshTriangles(random, colorAt, glowX, theme) {
   const points = meshPoints(random);
   const triangles = [];
   for (let row = 0; row < ROWS - 1; row++) {
@@ -99,8 +108,8 @@ function meshTriangles(random, colorAt, glowX) {
         const centerY = (triangle[0][1] + triangle[1][1] + triangle[2][1]) / 3;
         const distance = Math.hypot((centerX - glowX) / WIDTH, (centerY - HEIGHT / 2) / HEIGHT / 3);
         const strength = Math.max(0, 1 - distance * 1.6);
-        const fillOpacity = round((0.02 + strength * 0.22) * (0.55 + random() * 0.45) * 100) / 100;
-        const strokeOpacity = round((0.06 + strength * 0.22) * 100) / 100;
+        const fillOpacity = round((0.02 + strength * 0.22) * (0.55 + random() * 0.45) * theme.fillScale * 100) / 100;
+        const strokeOpacity = round(Math.min(1, (0.06 + strength * 0.22) * theme.strokeScale) * 100) / 100;
         const color = colorAt(centerX / WIDTH);
         triangles.push(
           `<polygon points="${triangle.map((point) => point.join(',')).join(' ')}" fill="${color}" fill-opacity="${fillOpacity}" stroke="${color}" stroke-opacity="${strokeOpacity}" stroke-width="1"/>`,
@@ -120,7 +129,7 @@ function iconMarkup(Icon, color) {
   return `<g transform="translate(${x} ${y}) scale(${ICON_SCALE})" fill="none" stroke="${color}" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" opacity="0.9">${inner}</g>`;
 }
 
-function bannerSvg({ meshColorAt, glows, icon }) {
+function bannerSvg({ meshColorAt, glows, icon, stage }) {
   const glowDefs = glows
     .map(
       (glow, index) =>
@@ -130,7 +139,7 @@ function bannerSvg({ meshColorAt, glows, icon }) {
   const glowRects = glows.map((_, index) => `<rect width="${WIDTH}" height="${HEIGHT}" fill="url(#glow${index})"/>`).join('');
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDTH} ${HEIGHT}" width="${WIDTH}" height="${HEIGHT}" preserveAspectRatio="xMidYMid slice">
-<defs><linearGradient id="stage" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0c0c10"/><stop offset="1" stop-color="#121218"/></linearGradient>${glowDefs}</defs>
+<defs><linearGradient id="stage" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${stage[0]}"/><stop offset="1" stop-color="${stage[1]}"/></linearGradient>${glowDefs}</defs>
 <rect width="${WIDTH}" height="${HEIGHT}" fill="url(#stage)"/>${glowRects}
 <g>${meshColorAt()}</g>${icon ?? ''}
 </svg>
@@ -143,13 +152,16 @@ const sections = FORUM_CATEGORIES.flatMap((category) => category.sections);
 for (const section of sections) {
   const Icon = SECTION_ICONS[section.code];
   if (!Icon) throw new Error(`No banner icon for section "${section.code}"; add one to SECTION_ICONS.`);
-  const random = createRandom(hashString(section.code));
-  const svg = bannerSvg({
-    meshColorAt: () => meshTriangles(random, () => section.color, WIDTH * 0.8),
-    glows: [{ x: WIDTH * 0.8, y: HEIGHT / 2, r: WIDTH * 0.45, color: section.color, opacity: 0.38 }],
-    icon: iconMarkup(Icon, section.color),
-  });
-  writeFileSync(path.join(outputDir, `${section.code}.svg`), svg);
+  for (const theme of THEMES) {
+    const random = createRandom(hashString(section.code));
+    const svg = bannerSvg({
+      stage: theme.stage,
+      meshColorAt: () => meshTriangles(random, () => section.color, WIDTH * 0.8, theme),
+      glows: [{ x: WIDTH * 0.8, y: HEIGHT / 2, r: WIDTH * 0.45, color: section.color, opacity: theme.glowOpacity }],
+      icon: iconMarkup(Icon, section.color),
+    });
+    writeFileSync(path.join(outputDir, `${section.code}${theme.suffix}.svg`), svg);
+  }
 }
 
-console.log(`Wrote ${sections.length} banners to ${path.relative(process.cwd(), outputDir)}/`);
+console.log(`Wrote ${sections.length * THEMES.length} banners to ${path.relative(process.cwd(), outputDir)}/`);

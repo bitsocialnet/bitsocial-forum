@@ -42,7 +42,7 @@ Tokens and surfaces are in `src/index.css`, copied from bitsocial-web's chain si
 - **Categories page:** one table per category group, columns Category and Latest. Each section row has a 4px left edge in the section color, its name, description and flairs. Latest hides below `md`.
 - **Topic lists:** Latest / New / Top pills above a table with Topic, Replies and Activity. Replies hides below `sm`. Activity uses compact ages (`5m`, `3h`, `2d`, then a date) with the full date in a tooltip.
 - **Topics:** oldest first, no nesting. Each post has a 44px avatar column, then name, short address and age, then the body. Posting controls sit under the thread.
-- **Avatars:** a letter avatar in a color derived from the address when the author has a display name; otherwise the default person icon on a muted circle.
+- **Avatars:** a letter avatar in a color derived from the address when the author has a display name; otherwise the default person icon on a grey circle, with a hairline ring in light mode so it does not blend into white surfaces.
 - **Footer:** one row of links with the Bitsocial Forge logo and "by Bitsocial Forge Inc." at bottom right.
 
 ## Theme (from bitsocial-web)
@@ -56,7 +56,8 @@ Tokens and surfaces are in `src/index.css`, copied from bitsocial-web's chain si
 - **Selection:** `blue-selected` (blue-tinted border and fill with the selected-filter glow) marks the active nav pill, sidebar item, tag and profile button.
 - **Hover:** `blue-hover` gives sidebar items, icon buttons, pills and tags an eased (200ms) blue tint and border. No grey hover fills.
 - **Tags:** pkc flairs as small 1px-border chips. Each opens a search for that tag, scoped to the section or community it came from, so the tag appears in the search bar. A community's flair colors win when set.
-- **Banners:** `scripts/generate-section-banners.mjs` draws a low-poly mesh on the dark stage in the section color, with a glow and a large lucide line icon on the right; the home banner is `banner-mesh-wide-dark` from the bitsocialnet/assets repository (bitsocial.net's polygon mesh on black). Banners are always dark, so overlay text is solid Silver Bright, never a gradient, over a left-to-right black gradient. Run `yarn banners:generate` after adding a section or changing its color or icon.
+- **Banners:** every banner has a dark and a light image, picked by the theme. `scripts/generate-section-banners.mjs` draws each section's pair from the same seeded low-poly mesh in the section color, with a glow and a large lucide line icon on the right: on bitsocial.net's dark stage, or on its light surface with stronger lines and a softer glow. The home banners are `banner-mesh-wide-dark` and `-light` from the bitsocialnet/assets repository. Overlay text is solid, never a gradient: Silver Bright over a black gradient in dark mode, foreground ink over a white gradient in light mode. Run `yarn banners:generate` after adding a section or changing its color or icon.
+- **Icon buttons:** the theme toggle and menu button sit in a visible circle in light mode (a hairline border and a faint grey fill); in dark mode they are bare until hovered.
 - **Links:** foreground or muted text that turns Electric Blue on hover. Keyboard focus uses the shared blue ring.
 
 ## Do
