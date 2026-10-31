@@ -13,7 +13,8 @@ Update this file in the same change that completes or reshapes an item. Decision
 - [x] Generated banners for the home page and every section
 - [x] Header search bar and search page (`/search`) with `tag:`, `section:` and `community:` tokens; tags open a scoped search
 - [x] Home banner from the bitsocialnet/assets polygon mesh; default person-icon avatar
-- [x] Light-mode banners and banner text; visible avatar and icon-button circles in light mode
+- [x] Light-mode banners and banner text; an opaque default-avatar circle in light mode
+- [x] Inbox button and placeholder page (`/inbox`)
 - [x] In-forum "How sections work" page (`/about/sections`)
 - [x] Profile button and profile page UI (`/profile`): active account, its posts, and a placeholder card for the profile node
 
@@ -35,6 +36,7 @@ Update this file in the same change that completes or reshapes an item. Decision
 - [ ] Reply and quote-reply, edit and delete
 - [ ] Challenge UI for each section's anti-spam challenges
 - [ ] Moderator tools: pin, lock, remove, flair edits
+- [ ] Inbox notifications (replies to the account's comments via bitsocial-react-hooks' `useNotifications`)
 
 ## M3: Directories
 

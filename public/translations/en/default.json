@@ -2,7 +2,8 @@
   "header": {
     "openSidebar": "Open sidebar",
     "closeSidebar": "Close sidebar",
-    "profile": "Your profile"
+    "profile": "Your profile",
+    "inbox": "Inbox"
   },
   "theme": {
     "switchToLight": "Switch to light theme",
@@ -60,7 +61,7 @@
   },
   "search": {
     "label": "Search topics",
-    "placeholder": "Search topics, or tag:Release",
+    "placeholder": "Search",
     "title": "Search",
     "help": "Search topic titles and text across every section. Narrow it with tag:Release, section:bso or community:<address>, or start from a tag below.",
     "activeFilters": "Search filters",
@@ -71,6 +72,11 @@
     "sectionHasNoCommunity": "No community holds this section yet, so it has no topics to search.",
     "noSectionCommunities": "No section has a community yet. You can still search one community with community:<address>.",
     "noResults": "No topics match this search."
+  },
+  "inbox": {
+    "title": "Inbox",
+    "emptyTitle": "No notifications yet",
+    "emptyDescription": "Replies to your topics and posts, mentions and messages from moderators will show up here. Notifications are not available yet."
   },
   "profile": {
     "anonymous": "Anonymous",

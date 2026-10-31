@@ -126,7 +126,8 @@ function iconMarkup(Icon, color) {
   const size = 24 * ICON_SCALE;
   const x = WIDTH * 0.8 - size / 2;
   const y = HEIGHT / 2 - size / 2;
-  return `<g transform="translate(${x} ${y}) scale(${ICON_SCALE})" fill="none" stroke="${color}" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" opacity="0.9">${inner}</g>`;
+  // Some icons fill a detail with currentColor, which is black inside an <img> unless the group sets color.
+  return `<g transform="translate(${x} ${y}) scale(${ICON_SCALE})" color="${color}" fill="none" stroke="${color}" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" opacity="0.9">${inner}</g>`;
 }
 
 function bannerSvg({ meshColorAt, glows, icon, stage }) {

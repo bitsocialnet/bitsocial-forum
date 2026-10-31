@@ -194,12 +194,12 @@
     background-color: rgb(26 79 208 / 0.18);
   }
 
-  /* Hover for sidebar items and icon buttons: an eased blue tint instead of a grey fill. */
+  /* Hover for sidebar items and icon buttons: a quick eased blue tint instead of a grey fill. */
   .blue-hover {
     transition:
-      background-color 200ms ease-out,
-      border-color 200ms ease-out,
-      color 200ms ease-out;
+      background-color 100ms ease-out,
+      border-color 100ms ease-out,
+      color 100ms ease-out;
   }
 
   .blue-hover:hover {

@@ -8,6 +8,7 @@ import { cn } from './lib/utils';
 import AboutSections from './views/about-sections';
 import Categories from './views/categories';
 import Community from './views/community';
+import Inbox from './views/inbox';
 import NotFound from './views/not-found';
 import Profile from './views/profile';
 import Search from './views/search';
@@ -44,6 +45,7 @@ export default function App() {
             <Routes>
               <Route path='/' element={<Categories />} />
               <Route path='/about/sections' element={<AboutSections />} />
+              <Route path='/inbox' element={<Inbox />} />
               <Route path='/profile' element={<Profile />} />
               <Route path='/search' element={<Search />} />
               <Route path='/s/:sectionCode/:sort?' element={<Section />} />

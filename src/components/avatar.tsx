@@ -1,8 +1,8 @@
 import { UserRound } from 'lucide-react';
 
 // Avatars until profiles exist. An author with a display name gets a letter avatar whose color comes
-// from their address, so it stays stable across posts; anyone else gets the default person icon, on a
-// grey circle with a hairline ring in light mode so it does not blend into white surfaces.
+// from their address, so it stays stable across posts; anyone else gets the default person icon on an
+// opaque grey circle, which stays visible on white surfaces and over banners.
 const AVATAR_COLORS = ['#1a4fd0', '#0e7490', '#7c3aed', '#b45309', '#be123c', '#15803d', '#4b5563', '#9333ea'];
 
 function hashString(value: string): number {
@@ -20,7 +20,7 @@ export default function Avatar({ name, seed, size = 40 }: { name?: string; seed?
     return (
       <span
         aria-hidden='true'
-        className='inline-flex shrink-0 items-center justify-center rounded-full bg-black/[0.08] text-muted-foreground ring-1 ring-inset ring-black/10 dark:bg-muted dark:ring-0'
+        className='inline-flex shrink-0 items-center justify-center rounded-full bg-silver-bright text-muted-foreground dark:bg-muted'
         style={{ width: size, height: size }}
       >
         <UserRound style={{ width: Math.round(size * 0.55), height: Math.round(size * 0.55) }} strokeWidth={1.75} />

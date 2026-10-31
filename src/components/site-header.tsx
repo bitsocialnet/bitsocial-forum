@@ -1,6 +1,7 @@
 import { Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import InboxButton from './inbox-button';
 import ProfileButton from './profile-button';
 import SearchBar from './search-bar';
 import ThemeToggle from './theme-toggle';
@@ -19,7 +20,7 @@ export default function SiteHeader({ isSidebarOpen, onToggleSidebar }: { isSideb
           aria-label={isSidebarOpen ? t('header.closeSidebar') : t('header.openSidebar')}
           aria-expanded={isSidebarOpen}
           aria-controls='forum-sidebar'
-          className='blue-hover inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-black/[0.04] text-muted-foreground lg:hidden dark:border-transparent dark:bg-transparent'
+          className='blue-hover inline-flex h-11 w-11 items-center justify-center rounded-full border border-transparent text-muted-foreground lg:hidden'
         >
           {isSidebarOpen ? <X className='h-5 w-5' /> : <Menu className='h-5 w-5' />}
         </button>
@@ -31,6 +32,7 @@ export default function SiteHeader({ isSidebarOpen, onToggleSidebar }: { isSideb
           <SearchBar />
         </div>
         <div className='flex shrink-0 items-center gap-1.5'>
+          <InboxButton />
           <ThemeToggle />
           <ProfileButton />
         </div>
