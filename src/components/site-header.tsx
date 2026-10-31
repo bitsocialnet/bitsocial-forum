@@ -32,8 +32,8 @@ export default function SiteHeader({ isSidebarOpen, onToggleSidebar }: { isSideb
           <SearchBar />
         </div>
         <div className='flex shrink-0 items-center gap-1.5'>
-          <InboxButton />
           <ThemeToggle />
+          <InboxButton />
           <ProfileButton />
         </div>
       </div>

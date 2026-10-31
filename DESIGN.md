@@ -35,7 +35,7 @@ Tokens and surfaces are in `src/index.css`, copied from bitsocial-web's chain si
 
 ## Structure (from Discourse)
 
-- **Header:** full width, sticky, 4rem. Logo and "Bitsocial Forum" on the left (the name hides below `sm`), the search bar in the middle, and forum functions on the right: the inbox, the theme toggle and the profile button (avatar and name, linking to `/profile`). Site links live in the sidebar and footer, not the header. Below `lg` a menu button opens the sidebar.
+- **Header:** full width, sticky, 4rem. Logo and "Bitsocial Forum" on the left (the name hides below `sm`), the search bar in the middle, and on the right the theme toggle, then the account items together: the inbox and the profile button (avatar and name, linking to `/profile`). Site links live in the sidebar and footer, not the header. Below `lg` a menu button opens the sidebar.
 - **Sidebar:** 16rem, sticky from `lg`, a drawer below it. Order: Categories page, each category group with its sections (color square plus name), then Resources (the in-forum "How sections work" page first, then external docs).
 - **Banners:** wide, short images at the top of the home page (with "Welcome to Bitsocial Forum") and of every section page (with the section name); see below.
 - **Search:** a pill search bar in the header. Queries are free text plus `tag:`, `section:` and `community:` tokens; the search page shows each part as a removable blue chip, and with an empty query it offers every section's tags to browse.
