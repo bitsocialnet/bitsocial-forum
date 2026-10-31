@@ -52,7 +52,7 @@ Update this file in the same change that completes or reshapes an item. Decision
 
 ## M5: Launch
 
-- [ ] Create the private GitHub repository once local testing is done (CI is already in `.github/workflows/ci.yml`)
+- [x] Private GitHub repository `bitsocialnet/bitsocial-forum` (2026-10-31)
 - [ ] `forum.bitsocial.net`: Cloudflare DNS and a Vercel project that deploys only from releases
 - [ ] PR review bots for the repository (Claude, Codex, CodeRabbit)
 - [ ] Make the repository public and announce on Telegram and Twitter
