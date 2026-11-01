@@ -212,11 +212,6 @@
     background-color: rgb(26 79 208 / 0.16);
   }
 
-  /* Lists swept with the pointer (the sidebar) tint instantly instead of fading. */
-  .blue-hover-instant {
-    transition: none;
-  }
-
   @media (hover: none) and (pointer: coarse) {
     .glass-panel {
       -webkit-backdrop-filter: blur(4px);

@@ -5,7 +5,9 @@ import { FORUM_CATEGORIES } from '../data/sections';
 import { BITSOCIAL_URL, DOCS_URL } from '../lib/site';
 import { cn } from '../lib/utils';
 
-const itemClassName = 'blue-hover blue-hover-instant flex items-center gap-2.5 rounded-full border border-transparent px-3 py-1.5 text-sm text-muted-foreground';
+// Hover shows the selected style itself, with no transition, so sweeping the list feels instant.
+const itemClassName =
+  'hover:blue-selected flex items-center gap-2.5 rounded-full border border-transparent px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground';
 const activeItemClassName = 'blue-selected font-medium text-foreground';
 const groupTitleClassName = 'px-3 pb-1.5 font-display text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/80';
 
