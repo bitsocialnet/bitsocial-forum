@@ -5,15 +5,16 @@ import { FORUM_CATEGORIES } from '../data/sections';
 import { BITSOCIAL_URL, DOCS_URL } from '../lib/site';
 import { cn } from '../lib/utils';
 
-// Hover shows the selected style itself. It appears instantly (no transition while hovered) so sweeping
-// the list feels immediate, and fades out after the pointer leaves.
+// The hover tint appears instantly (no transition while hovered) so sweeping the list feels immediate,
+// and fades out after the pointer leaves. The selected item keeps its own style under the pointer.
 const itemClassName =
-  'hover:blue-selected flex items-center gap-2.5 rounded-full border border-transparent px-3 py-1.5 text-sm text-muted-foreground transition-[background-color,border-color,box-shadow,color] duration-500 ease-in-out hover:text-foreground hover:transition-none';
+  'flex items-center gap-2.5 rounded-full border border-transparent px-3 py-1.5 text-sm text-muted-foreground transition-[background-color,border-color,box-shadow,color] duration-500 ease-in-out hover:transition-none';
+const hoverItemClassName = 'hover:blue-tint';
 const activeItemClassName = 'blue-selected font-medium text-foreground';
 const groupTitleClassName = 'px-3 pb-1.5 font-display text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/80';
 
 function navItemClassName({ isActive }: { isActive: boolean }) {
-  return cn(itemClassName, isActive && activeItemClassName);
+  return cn(itemClassName, isActive ? activeItemClassName : hoverItemClassName);
 }
 
 // Discourse-style sidebar: the categories page, every section grouped by category, then resources.
@@ -59,7 +60,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           </li>
           {externalLinks.map((link) => (
             <li key={link.href}>
-              <a href={link.href} target='_blank' rel='noopener noreferrer' className={itemClassName}>
+              <a href={link.href} target='_blank' rel='noopener noreferrer' className={cn(itemClassName, hoverItemClassName)}>
                 {link.label}
                 <ArrowUpRight aria-hidden className='h-3.5 w-3.5 opacity-70 rtl:-scale-x-100' />
               </a>

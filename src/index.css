@@ -203,12 +203,17 @@
   }
 
   .blue-hover:hover {
+    @apply blue-tint;
+  }
+
+  /* The hover tint on its own, for elements that time it themselves (`hover:blue-tint`). */
+  .blue-tint {
     border-color: rgb(37 99 235 / 0.3);
     background-color: rgb(26 79 208 / 0.08);
     color: hsl(var(--foreground));
   }
 
-  .dark .blue-hover:hover {
+  .dark .blue-tint {
     background-color: rgb(26 79 208 / 0.16);
   }
 
