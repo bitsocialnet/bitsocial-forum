@@ -22,6 +22,11 @@ umask 077
 # workflow. When playwright-cli cannot be queried the lock is left alone, so a
 # broken CLI never silently disables the budget.
 #
+# The CLI lists a browser only once it is up, so a lock is also held while it is
+# starting: its owner is not written yet, or the `open` that took it is still
+# running. Both are bounded by a launch grace, so a crash or a reused PID cannot
+# hold the slot for longer.
+#
 # PW_SESSION_POLL_SECONDS overrides how often `--wait` re-checks the slot.
 
 usage() {
@@ -65,6 +70,7 @@ started_file="$lock_dir/started-at"
 workspace_file="$lock_dir/workspace"
 default_wait_seconds=300
 poll_seconds="${PW_SESSION_POLL_SECONDS:-5}"
+launch_grace_seconds=120
 
 # Recorded for diagnostics only: the lock is machine-wide, so a checkout outside
 # a Git worktree is unusual but not an error.
@@ -115,8 +121,47 @@ session_state() {
   echo dead
 }
 
+opener_pid() {
+  sed -n '2p' "$owner_file" 2>/dev/null || true
+}
+
+# Seconds since the lock directory last changed, which is when its metadata was
+# written. Fails when the lock is gone.
+lock_age() {
+  local modified
+
+  modified="$(stat -c %Y "$lock_dir" 2>/dev/null || stat -f %m "$lock_dir" 2>/dev/null)" || return 1
+  echo $(($(date +%s) - modified))
+}
+
+# Succeeds while a lock is within its launch grace and either has no owner yet
+# or its opener is still running.
+lock_starting() {
+  local owner="$1" pid="$2" age
+
+  age="$(lock_age)" || return 1
+  [ "$age" -lt "$launch_grace_seconds" ] || return 1
+  [ -z "$owner" ] && return 0
+  [[ "$pid" =~ ^[1-9][0-9]*$ ]] && kill -0 "$pid" 2>/dev/null
+}
+
+# Echoes `starting`, `live`, `dead`, or `unknown` for the current lock.
+lock_state() {
+  local owner="$1" pid="$2"
+
+  if lock_starting "$owner" "$pid"; then
+    echo starting
+  elif [ -z "$owner" ]; then
+    echo dead
+  else
+    session_state "$owner"
+  fi
+}
+
+# Line 2 of the owner file is the PID of the `open` that took the lock; older
+# copies of this script read line 1 only.
 write_lock_metadata() {
-  printf '%s\n' "$1" >"$owner_file"
+  printf '%s\n%s\n' "$1" "$$" >"$owner_file"
   date -u '+%Y-%m-%dT%H:%M:%SZ' >"$started_file"
   printf '%s\n' "$workspace" >"$workspace_file"
 }
@@ -132,9 +177,10 @@ print_status() {
   owner="$(current_owner)"
   started="$(sed -n '1p' "$started_file" 2>/dev/null || true)"
   held_workspace="$(sed -n '1p' "$workspace_file" 2>/dev/null || true)"
-  state="$([ -n "$owner" ] && session_state "$owner" || echo unknown)"
+  state="$(lock_state "$owner" "$(opener_pid)")"
 
   case "$state" in
+    starting) echo "pw-session: browser slot is held (browser starting)" ;;
     live) echo "pw-session: browser slot is held" ;;
     dead) echo "pw-session: browser slot is held by a stale lock" ;;
     *) echo "pw-session: browser slot is held (browser state unverifiable)" ;;
@@ -146,6 +192,7 @@ print_status() {
   echo "Lock: $lock_dir"
 
   case "$state" in
+    starting) echo "Browser: starting — the 'open' that took this slot is still launching it" ;;
     live) echo "Browser: running" ;;
     dead)
       echo "Browser: not running — the next 'open' reclaims this slot automatically"
@@ -182,7 +229,7 @@ acquire() {
     fi
 
     owner="$(current_owner)"
-    state="$([ -n "$owner" ] && session_state "$owner" || echo dead)"
+    state="$(lock_state "$owner" "$(opener_pid)")"
 
     # Bounded so an unremovable lock directory fails loudly instead of spinning.
     if [ "$state" = dead ] && [ "$reclaims" -lt 3 ]; then
@@ -225,7 +272,7 @@ release() {
   owner="$(current_owner)"
   if [ "$owner" != "$session" ]; then
     echo "pw-session: '$session' cannot release the slot held by '${owner:-unknown}'" >&2
-    if [ -n "$owner" ] && [ "$(session_state "$owner")" = dead ]; then
+    if [ -n "$owner" ] && [ "$(lock_state "$owner" "$(opener_pid)")" = dead ]; then
       echo "pw-session: that lock is stale; the next 'open' reclaims it automatically" >&2
     fi
     return 1
