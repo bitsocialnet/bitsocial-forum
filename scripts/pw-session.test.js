@@ -64,10 +64,12 @@ const scriptEnv = () => ({
   PW_SESSION_POLL_SECONDS: '1',
 });
 
-const run = (...args) => {
-  const result = spawnSync(scriptPath, args, { encoding: 'utf8', env: scriptEnv() });
+// cwd stands for the checkout the script is called from.
+const runFrom = (cwd, ...args) => {
+  const result = spawnSync(scriptPath, args, { cwd, encoding: 'utf8', env: scriptEnv() });
   return { code: result.status, output: `${result.stdout}${result.stderr}` };
 };
+const run = (...args) => runFrom(undefined, ...args);
 
 // Runs the script in the background, for interleavings a synchronous call
 // cannot produce.
@@ -152,6 +154,23 @@ describe('pw-session.sh', () => {
     // dropping someone else's lock.
     expect(run('close', 'verify-firefox').output).toContain("left the slot held by 'verify-chrome' untouched");
     expect(lockExists()).toBe(true);
+  });
+
+  it('refuses to close or release a same-named slot held from another workspace', () => {
+    run('open', 'check-task', 'about:blank');
+    const otherWorkspace = path.join(tempDir, 'other-worktree');
+    fs.mkdirSync(otherWorkspace);
+
+    // playwright-cli's session registry is shared, so this name reaches the
+    // holder's browser.
+    const closed = runFrom(otherWorkspace, 'close', 'check-task');
+    expect(closed.code).toBe(1);
+    expect(closed.output).toContain('held from another workspace');
+    expect(liveSession()).toBe('check-task');
+    expect(runFrom(otherWorkspace, 'release', 'check-task').code).toBe(1);
+    expect(lockExists()).toBe(true);
+
+    expect(run('close', 'check-task').output).toContain("released browser slot for 'check-task'");
   });
 
   it('releases the slot when the owner closes it', () => {
