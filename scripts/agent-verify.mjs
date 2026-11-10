@@ -3,7 +3,7 @@
 import { spawnSync } from 'node:child_process';
 import spawn from 'cross-spawn';
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { constants, tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -54,21 +54,72 @@ export function defaultCommands(cwd = repoRoot) {
   return commands;
 }
 
-function acquireLock(lockPath, cwd) {
+// EPERM means the process exists under another user. A reused PID only keeps the lock held.
+function processIsGone(pid) {
+  if (!Number.isInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return false;
+  } catch (error) {
+    return error.code === 'ESRCH';
+  }
+}
+
+// Reclaimers take turns through a second directory and re-read the token inside it, so one
+// acting on an old reading never removes a lock that another run has just taken.
+function reclaimStaleLock(lockPath, token) {
+  const turnPath = `${lockPath}.reclaim`;
+  try {
+    mkdirSync(turnPath, { mode: 0o700 });
+  } catch (error) {
+    if (error.code === 'EEXIST') return false;
+    throw error;
+  }
+  try {
+    const ownerPath = path.join(lockPath, 'owner.json');
+    let current;
+    try {
+      current = JSON.parse(readFileSync(ownerPath, 'utf8'));
+    } catch {
+      return false;
+    }
+    if (current.token !== token) return false;
+    unlinkSync(ownerPath);
+    rmdirSync(lockPath);
+    return true;
+  } finally {
+    rmdirSync(turnPath);
+  }
+}
+
+function acquireLock(lockPath, cwd, log, attempt = 0) {
   try {
     mkdirSync(lockPath, { mode: 0o700 });
   } catch (error) {
     if (error.code !== 'EEXIST') throw error;
     let owner = 'owner details unavailable';
+    let details;
     try {
-      const details = JSON.parse(readFileSync(path.join(lockPath, 'owner.json'), 'utf8'));
+      details = JSON.parse(readFileSync(path.join(lockPath, 'owner.json'), 'utf8'));
       owner = `PID ${details.pid}, ${details.cwd}, started ${details.startedAt}`;
     } catch {
       // A concurrent owner may still be writing its metadata. Do not steal it.
     }
-    throw Object.assign(new Error(`Verification slot busy (${owner}). Lock: ${lockPath}. Retry after that run finishes; inspect stale locks before removing them.`), {
-      code: 'LOCK_BUSY',
-    });
+    // An owner killed without running `finally` (SIGKILL, a crash) would otherwise hold the slot forever.
+    const ownerGone = processIsGone(details?.pid);
+    if (ownerGone && attempt < 2) {
+      if (reclaimStaleLock(lockPath, details.token)) log(`[agent verify] Reclaimed a stale lock from ${owner}; that process is no longer running.`);
+      return acquireLock(lockPath, cwd, log, attempt + 1);
+    }
+    const turnHint = ownerGone && existsSync(`${lockPath}.reclaim`) ? ` Reclaim turn held: ${lockPath}.reclaim; remove it by hand if no run is reclaiming.` : '';
+    throw Object.assign(
+      new Error(
+        `Verification slot busy (${owner}${ownerGone ? ', no longer running' : ''}). Lock: ${lockPath}.${turnHint} Retry after that run finishes; inspect stale locks before removing them.`,
+      ),
+      {
+        code: 'LOCK_BUSY',
+      },
+    );
   }
 
   const ownerPath = path.join(lockPath, 'owner.json');
@@ -96,7 +147,7 @@ export async function runVerification({
 } = {}) {
   let release;
   try {
-    release = acquireLock(lockPath, cwd);
+    release = acquireLock(lockPath, cwd, log);
   } catch (failure) {
     error(`[agent verify] ${failure.message}`);
     return failure.code === 'LOCK_BUSY' ? 75 : 1;
@@ -120,8 +171,11 @@ export async function runVerification({
   };
   const onInterrupt = () => forwardSignal('SIGINT');
   const onTerminate = () => forwardSignal('SIGTERM');
+  // A closed terminal or SSH session sends SIGHUP; without a handler the lock and the detached command outlive this process.
+  const onHangup = () => forwardSignal('SIGHUP');
   process.on('SIGINT', onInterrupt);
   process.on('SIGTERM', onTerminate);
+  process.on('SIGHUP', onHangup);
 
   try {
     for (const entry of commands) {
@@ -149,6 +203,7 @@ export async function runVerification({
   } finally {
     process.off('SIGINT', onInterrupt);
     process.off('SIGTERM', onTerminate);
+    process.off('SIGHUP', onHangup);
     try {
       release();
     } catch (failure) {
