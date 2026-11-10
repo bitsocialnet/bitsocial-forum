@@ -21,12 +21,16 @@ export default function Topic() {
   // marks it loaded. A topic pkc-js gave up on, such as an invalid record, is 'failed' instead.
   const isLoaded = typeof comment.timestamp === 'number';
   const isFailed = !isLoaded && comment.state === 'failed';
-  const section = getSectionForCommunity(communityAddress);
   const now = Date.now();
 
   if (!communityAddress || !commentCid) {
     return <NotFoundMessage />;
   }
+
+  // The URL's community only helps fetch the topic, and pkc-js accepts a topic from another community
+  // unless both are names. Once loaded, label the topic with the community it was posted to.
+  const topicCommunityAddress: string = (isLoaded && comment.communityAddress) || communityAddress;
+  const section = getSectionForCommunity(topicCommunityAddress);
 
   return (
     <div className='max-w-3xl'>
@@ -38,13 +42,13 @@ export default function Topic() {
           {section ? (
             <CategoryBadge section={section} />
           ) : (
-            <Link to={`/c/${communityAddress}`} className='text-sm text-muted-foreground hover:text-foreground'>
-              {getShortAddress(communityAddress)}
+            <Link to={`/c/${topicCommunityAddress}`} className='text-sm text-muted-foreground hover:text-foreground'>
+              {getShortAddress(topicCommunityAddress)}
             </Link>
           )}
           <TagList
             tags={comment.flairs}
-            getTagPath={(tag) => getSearchPath(section ? { section: section.code, tags: [tag] } : { community: communityAddress, tags: [tag] })}
+            getTagPath={(tag) => getSearchPath(section ? { section: section.code, tags: [tag] } : { community: topicCommunityAddress, tags: [tag] })}
           />
         </div>
       </header>

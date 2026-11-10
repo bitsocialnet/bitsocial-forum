@@ -126,4 +126,21 @@ describe('Topic', () => {
     expect(container.querySelector('h1')?.textContent).toBe('Dark mode');
     expect(container.querySelectorAll('article')).toHaveLength(2);
   });
+
+  it('labels a topic with the community it was posted to, not the one in the URL', async () => {
+    testState.comment = { ...loadedComment, flairs: [{ text: 'Chain' }] };
+    await renderAt('/c/12D3KooWSectionCommunity/t/QmTopic');
+
+    // The URL names the section's community, but the loaded topic belongs to askseedit.bso.
+    expect(container.querySelector('a[href="/s/bso"]')).toBeNull();
+    expect(container.querySelector('a[href="/c/askseedit.bso"]')?.textContent).toBe('askseedit.bso');
+    expect(container.querySelector('a[href="/search?q=community%3Aaskseedit.bso+tag%3AChain"]')?.textContent).toBe('Chain');
+  });
+
+  it('labels a topic with the URL community while it loads', async () => {
+    testState.comment = { cid: 'QmTopic', state: 'fetching-ipfs' };
+    await renderAt('/c/12D3KooWSectionCommunity/t/QmTopic');
+
+    expect(container.querySelector('a[href="/s/bso"]')?.textContent).toBe('BSO');
+  });
 });
