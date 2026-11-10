@@ -155,8 +155,27 @@ export function openInBrowser(url) {
   spawn(opener.cmd, opener.args, { stdio: 'ignore', detached: true }).unref();
 }
 
+const launcherSignals = ['SIGINT', 'SIGTERM', 'SIGHUP'];
+
+// Ties the server's lifetime to the launcher's in both directions: a signal to
+// the launcher alone (for example `kill <pid>`) must not leave the server holding
+// its route or port.
 export function forwardChildExit(child) {
+  const forwardSignal = (signal) => {
+    if (child.exitCode === null && child.signalCode === null) {
+      child.kill(signal);
+    }
+  };
+
+  for (const signal of launcherSignals) {
+    process.on(signal, forwardSignal);
+  }
+
   child.on('exit', (code, signal) => {
+    for (const launcherSignal of launcherSignals) {
+      process.off(launcherSignal, forwardSignal);
+    }
+
     if (signal) {
       process.kill(process.pid, signal);
       return;
