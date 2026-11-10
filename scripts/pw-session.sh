@@ -68,6 +68,7 @@ fi
 owner_file="$lock_dir/owner"
 started_file="$lock_dir/started-at"
 workspace_file="$lock_dir/workspace"
+reclaim_dir="${lock_dir}.reclaim"
 default_wait_seconds=300
 poll_seconds="${PW_SESSION_POLL_SECONDS:-5}"
 launch_grace_seconds=120
@@ -125,13 +126,26 @@ opener_pid() {
   sed -n '2p' "$owner_file" 2>/dev/null || true
 }
 
+lock_mtime() {
+  stat -c %Y "$lock_dir" 2>/dev/null || stat -f %m "$lock_dir" 2>/dev/null
+}
+
 # Seconds since the lock directory last changed, which is when its metadata was
 # written. Fails when the lock is gone.
 lock_age() {
   local modified
 
-  modified="$(stat -c %Y "$lock_dir" 2>/dev/null || stat -f %m "$lock_dir" 2>/dev/null)" || return 1
+  modified="$(lock_mtime)" || return 1
   echo $(($(date +%s) - modified))
+}
+
+# Identifies one lock instance, so a reclaim can tell the lock it judged stale
+# from a fresh one created at the same path since. Empty when there is no lock.
+lock_record() {
+  local modified
+
+  modified="$(lock_mtime)" || return 0
+  printf '%s|%s|%s' "$modified" "$(cat "$owner_file" 2>/dev/null || true)" "$(cat "$started_file" 2>/dev/null || true)"
 }
 
 # Succeeds while a lock is within its launch grace and either has no owner yet
@@ -203,19 +217,22 @@ print_status() {
   esac
 }
 
-# Atomically drop a lock we have confirmed is stale. Renaming first means only
-# one racing reclaimer can win, so a concurrent fresh lock is never deleted.
+# Drop a lock judged stale. The verdict needs a `playwright-cli list` call, so
+# reclaimers take turns through a second directory and re-check the lock inside
+# it: one acting on an old verdict never deletes a fresh lock created since.
 reclaim_stale_lock() {
-  local owner="$1" staged="${lock_dir}.stale.$$"
+  local owner="$1" judged="$2" staged="${lock_dir}.stale.$$"
 
-  if mv "$lock_dir" "$staged" 2>/dev/null; then
+  mkdir "$reclaim_dir" 2>/dev/null || return 0
+  if [ -n "$judged" ] && [ "$(lock_record)" = "$judged" ] && mv "$lock_dir" "$staged" 2>/dev/null; then
     rm -rf "$staged"
     echo "pw-session: reclaimed stale slot from '$owner' (its browser is no longer running)" >&2
   fi
+  rmdir "$reclaim_dir"
 }
 
 acquire() {
-  local session="$1" wait_seconds="$2" owner state reclaims=0
+  local session="$1" wait_seconds="$2" record owner state reclaims=0
 
   validate_session "$session"
   mkdir -p "$(dirname "$lock_dir")"
@@ -228,19 +245,24 @@ acquire() {
       return 0
     fi
 
+    # Read before the verdict, so a reclaim acts only on the lock it judged.
+    record="$(lock_record)"
     owner="$(current_owner)"
     state="$(lock_state "$owner" "$(opener_pid)")"
 
     # Bounded so an unremovable lock directory fails loudly instead of spinning.
     if [ "$state" = dead ] && [ "$reclaims" -lt 3 ]; then
       reclaims=$((reclaims + 1))
-      reclaim_stale_lock "${owner:-unknown}"
+      reclaim_stale_lock "${owner:-unknown}" "$record"
       continue
     fi
 
     if [ "$state" = dead ]; then
       print_status >&2
       echo "pw-session: could not reclaim the stale slot at $lock_dir; remove it by hand" >&2
+      if [ -d "$reclaim_dir" ]; then
+        echo "pw-session: another reclaim is running or was interrupted: $reclaim_dir" >&2
+      fi
       return 75
     fi
 

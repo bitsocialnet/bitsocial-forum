@@ -11,11 +11,17 @@ const scriptPath = path.join(path.dirname(fileURLToPath(import.meta.url)), 'pw-s
 // real browser engines. `list` reports the session recorded in liveSession as
 // `status: open`, mirroring the real `playwright-cli list --all` output. Like the
 // real CLI, `open` lists a browser only once it is up; a `hold-open-<session>`
-// file keeps that session launching.
+// file keeps that session launching. While the file named by FAKE_LIST_GATE
+// exists, `list` stalls, so a caller can be paused between reading the lock and
+// acting on its verdict.
 const FAKE_CLI = `#!/bin/bash
 state="$(dirname "$0")/live-session"
 open_rc="$(dirname "$0")/open-exit-code"
 if [ "\${1:-}" = "list" ]; then
+  if [ -n "\${FAKE_LIST_GATE:-}" ] && [ -e "$FAKE_LIST_GATE" ]; then
+    : >"$FAKE_LIST_GATE.waiting"
+    while [ -e "$FAKE_LIST_GATE" ]; do sleep 0.05; done
+  fi
   live="$(cat "$state")"
   [ "$live" = "__UNAVAILABLE__" ] && exit 3
   echo "### Browsers"
@@ -65,8 +71,8 @@ const run = (...args) => {
 
 // Runs the script in the background, for interleavings a synchronous call
 // cannot produce.
-const start = (...args) => {
-  const child = spawn(scriptPath, args, { env: scriptEnv() });
+const startWith = (env, ...args) => {
+  const child = spawn(scriptPath, args, { env: { ...scriptEnv(), ...env } });
   let output = '';
   child.stdout.on('data', (chunk) => (output += chunk));
   child.stderr.on('data', (chunk) => (output += chunk));
@@ -75,6 +81,7 @@ const start = (...args) => {
     child.on('close', (code) => resolve({ code, output }));
   });
 };
+const start = (...args) => startWith({}, ...args);
 
 const waitFor = async (condition) => {
   for (let attempt = 0; attempt < 500; attempt += 1) {
@@ -206,6 +213,33 @@ describe('pw-session.sh', () => {
     writeLock('verify-chrome', process.pid);
     ageLock();
     expect(run('open', 'verify-firefox', 'about:blank').output).toContain("reclaimed stale slot from 'verify-chrome'");
+  });
+
+  it('never lets a reclaimer acting on an old verdict remove a fresh lock', async () => {
+    writeLock('verify-chrome', exitedPid()); // stale: its browser and opener are gone
+    const gate = path.join(tempDir, 'list-gate');
+    fs.writeFileSync(gate, '');
+    // This open reads the stale owner, then stalls inside `playwright-cli list`.
+    const late = startWith({ FAKE_LIST_GATE: gate }, 'open', 'verify-firefox', 'about:blank');
+    await waitFor(() => fs.existsSync(`${gate}.waiting`));
+
+    // Meanwhile another open reclaims the stale lock and takes the slot.
+    expect(run('open', 'verify-webkit', 'about:blank').code).toBe(0);
+
+    fs.rmSync(gate); // the stalled open now judges 'verify-chrome' dead
+    expect((await late).code).toBe(75);
+    expect(lockOwner()).toBe('verify-webkit');
+    expect(liveSession()).toBe('verify-webkit');
+  });
+
+  it('leaves a stale lock alone while another reclaim holds its turn', () => {
+    writeLock('verify-chrome', exitedPid());
+    fs.mkdirSync(`${lockDir()}.reclaim`);
+
+    const stuck = run('open', 'verify-firefox', 'about:blank');
+    expect(stuck.code).toBe(75);
+    expect(stuck.output).toContain('another reclaim is running or was interrupted');
+    expect(lockOwner()).toBe('verify-chrome');
   });
 
   it('still stops the browser when the lock was already lost', () => {
