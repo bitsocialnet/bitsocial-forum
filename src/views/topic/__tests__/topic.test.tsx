@@ -98,6 +98,27 @@ describe('Topic', () => {
     expect(window.location.hash).toBe('#/c/askseedit.bso/t/QmTopic');
   });
 
+  it('shows the loading state, not an empty topic, while only the placeholder comment exists', async () => {
+    testState.comment = { cid: 'QmTopic', state: 'fetching-ipfs' };
+    testState.repliesHasMore = true;
+    await renderAt('/c/askseedit.bso/t/QmTopic');
+
+    expect(container.querySelector('h1')?.textContent).toBe('topic.loading');
+    expect(container.querySelector('article')).toBeNull();
+    expect(container.textContent).not.toContain('topic.loadMoreReplies');
+    expect(container.textContent).not.toContain('topic.reply');
+  });
+
+  it('reports a topic that failed to load instead of rendering it as untitled', async () => {
+    testState.comment = { cid: 'QmTopic', state: 'failed', error: new Error('invalid signature') };
+    testState.repliesHasMore = true;
+    await renderAt('/c/askseedit.bso/t/QmTopic');
+
+    expect(container.querySelector('h1')?.textContent).toBe('topic.loadFailed');
+    expect(container.querySelector('article')).toBeNull();
+    expect(container.textContent).not.toContain('topic.loadMoreReplies');
+  });
+
   it('renders a loaded topic and its replies', async () => {
     testState.replies = [{ cid: 'QmReply', content: 'Agreed', timestamp: 1_700_000_050, author: { address: '12D3KooWReplier' } }];
     await renderAt('/c/askseedit.bso/t/QmTopic');

@@ -17,6 +17,10 @@ export default function Topic() {
   const { communityAddress, commentCid } = useParams();
   const comment = useComment({ commentCid, community: communityAddress ? toCommunityIdentifier(communityAddress) : undefined });
   const { replies, hasMore, loadMore } = useReplies({ comment: comment.cid ? comment : undefined, sortType: 'old', flat: true });
+  // Before the topic loads, the hooks hold a placeholder with only its cid, so a timestamp is what
+  // marks it loaded. A topic pkc-js gave up on, such as an invalid record, is 'failed' instead.
+  const isLoaded = typeof comment.timestamp === 'number';
+  const isFailed = !isLoaded && comment.state === 'failed';
   const section = getSectionForCommunity(communityAddress);
   const now = Date.now();
 
@@ -28,7 +32,7 @@ export default function Topic() {
     <div className='max-w-3xl'>
       <header className='mb-6'>
         <h1 className='break-words font-display text-3xl font-semibold leading-tight text-muted-foreground'>
-          {comment.title || (comment.cid ? t('topics.untitled') : t('topic.loading'))}
+          {comment.title || (isLoaded ? t('topics.untitled') : isFailed ? t('topic.loadFailed') : t('topic.loading'))}
         </h1>
         <div className='mt-2 flex flex-wrap items-center gap-3'>
           {section ? (
@@ -45,7 +49,7 @@ export default function Topic() {
         </div>
       </header>
 
-      {comment.cid ? (
+      {isLoaded ? (
         <>
           <div className='glass-panel px-5 sm:px-6 [&>article:last-child]:border-b-0'>
             <Post comment={comment} number={1} now={now} />
