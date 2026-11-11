@@ -47,37 +47,69 @@ test('resolvePort skips a port held on the wildcard address by a default listen'
   assert.notEqual(await resolvePort(busyPort, '127.0.0.1'), busyPort);
 });
 
-for (const signal of ['SIGTERM', 'SIGHUP']) {
-  test(`forwardChildExit stops the server when the launcher receives ${signal}`, async (t) => {
+const directServer = `
+import { writeFileSync } from 'node:fs';
+writeFileSync(process.env.SERVER_PID_FILE, String(process.pid));
+setInterval(() => {}, 1000);
+`;
+
+// Like portless 0.11: the server runs in its own process group, and only
+// SIGINT and SIGTERM stop it.
+const portlessLikeChild = `
+import { spawn } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
+const server = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore', detached: true });
+for (const [signal, number] of [['SIGINT', 2], ['SIGTERM', 15]]) {
+  process.on(signal, () => {
+    process.kill(-server.pid, signal);
+    process.exit(128 + number);
+  });
+}
+writeFileSync(process.env.SERVER_PID_FILE, String(server.pid));
+`;
+
+const signalCases = [
+  { child: 'a direct server', source: directServer, signal: 'SIGTERM', exit: { code: null, signal: 'SIGTERM' } },
+  { child: 'a direct server', source: directServer, signal: 'SIGHUP', exit: { code: null, signal: 'SIGTERM' } },
+  { child: 'the server behind a Portless-like child', source: portlessLikeChild, signal: 'SIGTERM', exit: { code: 143, signal: null } },
+  { child: 'the server behind a Portless-like child', source: portlessLikeChild, signal: 'SIGHUP', exit: { code: 143, signal: null } },
+];
+
+for (const { child, source, signal, exit } of signalCases) {
+  test(`forwardChildExit stops ${child} when the launcher receives ${signal}`, async (t) => {
     const root = mkdtempSync(path.join(tmpdir(), 'dev-server-test-'));
     t.after(() => rmSync(root, { recursive: true, force: true }));
     const pidFile = path.join(root, 'server.pid');
+    const childPath = path.join(root, 'child.mjs');
     const launcherPath = path.join(root, 'launcher.mjs');
     const utils = new URL('../local-server-utils.mjs', import.meta.url).href;
+    writeFileSync(childPath, source);
     writeFileSync(
       launcherPath,
       `
 import { spawn } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
 import { forwardChildExit } from ${JSON.stringify(utils)};
-const server = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });
-writeFileSync(${JSON.stringify(pidFile)}, String(server.pid));
-forwardChildExit(server);
+forwardChildExit(spawn(process.execPath, [${JSON.stringify(childPath)}], { stdio: 'ignore' }));
 `,
     );
-    const launcher = spawn(process.execPath, [launcherPath], { stdio: 'ignore' });
+    const launcher = spawn(process.execPath, [launcherPath], { stdio: 'ignore', env: { ...process.env, SERVER_PID_FILE: pidFile } });
     const exited = new Promise((resolve) => launcher.on('close', (code, closeSignal) => resolve({ code, signal: closeSignal })));
     t.after(() => launcher.kill('SIGKILL'));
 
-    for (let attempt = 0; attempt < 300 && !existsSync(pidFile); attempt += 1) await setTimeout(10);
-    const serverPid = Number(readFileSync(pidFile, 'utf8'));
+    let serverPid = 0;
+    for (let attempt = 0; attempt < 300 && !serverPid; attempt += 1) {
+      if (existsSync(pidFile)) serverPid = Number(readFileSync(pidFile, 'utf8'));
+      if (!serverPid) await setTimeout(10);
+    }
+    assert.ok(serverPid > 0, 'the child never reported its server PID');
     t.after(() => {
       if (processExists(serverPid)) process.kill(serverPid, 'SIGKILL');
     });
 
     launcher.kill(signal);
-    assert.deepEqual(await exited, { code: null, signal });
+    const launcherExit = await exited;
     for (let attempt = 0; attempt < 200 && processExists(serverPid); attempt += 1) await setTimeout(10);
     assert.equal(processExists(serverPid), false, 'the server outlived its launcher');
+    assert.deepEqual(launcherExit, exit);
   });
 }

@@ -159,11 +159,13 @@ const launcherSignals = ['SIGINT', 'SIGTERM', 'SIGHUP'];
 
 // Ties the server's lifetime to the launcher's in both directions: a signal to
 // the launcher alone (for example `kill <pid>`) must not leave the server holding
-// its route or port.
+// its route or port. A hangup is forwarded as SIGTERM because Portless handles
+// only SIGINT and SIGTERM and runs Vite in its own process group, so SIGHUP
+// would kill Portless and leave Vite running.
 export function forwardChildExit(child) {
   const forwardSignal = (signal) => {
     if (child.exitCode === null && child.signalCode === null) {
-      child.kill(signal);
+      child.kill(signal === 'SIGHUP' ? 'SIGTERM' : signal);
     }
   };
 
