@@ -22,6 +22,11 @@ umask 077
 # workflow. When playwright-cli cannot be queried the lock is left alone, so a
 # broken CLI never silently disables the budget.
 #
+# The CLI lists a browser only once it is up, so a lock is also held while it is
+# starting: its owner is not written yet, or the `open` that took it is still
+# running. Both are bounded by a launch grace, so a crash or a reused PID cannot
+# hold the slot for longer.
+#
 # PW_SESSION_POLL_SECONDS overrides how often `--wait` re-checks the slot.
 
 usage() {
@@ -39,7 +44,8 @@ One browser slot is shared by every worktree and repository on this machine.
            A slot whose browser is gone is reclaimed automatically.
   close    Stop the named browser, then release the slot. Always attempts the
            browser close, even when the lock was already lost, and never
-           releases a slot held by a different session.
+           releases a slot held by a different session. A slot held under the
+           same name from another workspace is left running.
   status   Report the holder and whether its browser is still running.
   release  Drop a lock without closing a browser. Normal cleanup uses `close`.
 EOF
@@ -63,12 +69,16 @@ fi
 owner_file="$lock_dir/owner"
 started_file="$lock_dir/started-at"
 workspace_file="$lock_dir/workspace"
+reclaim_dir="${lock_dir}.reclaim"
 default_wait_seconds=300
 poll_seconds="${PW_SESSION_POLL_SECONDS:-5}"
+launch_grace_seconds=120
 
-# Recorded for diagnostics only: the lock is machine-wide, so a checkout outside
-# a Git worktree is unusual but not an error.
-workspace="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+# The checkout that takes the lock; one outside a Git worktree is unusual but not
+# an error. Agents in two worktrees can pick the same session name, and
+# playwright-cli's session registry is shared between them, so `close` and
+# `release` also require the lock to be held from this workspace.
+workspace="$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)"
 
 validate_session() {
   local session="$1"
@@ -115,8 +125,71 @@ session_state() {
   echo dead
 }
 
+opener_pid() {
+  sed -n '2p' "$owner_file" 2>/dev/null || true
+}
+
+# Prints the holder's workspace when the lock was taken from another checkout.
+held_elsewhere() {
+  local held
+
+  held="$(sed -n '1p' "$workspace_file" 2>/dev/null || true)"
+  [ -n "$held" ] && [ "$held" != "$workspace" ] && echo "$held"
+}
+
+lock_mtime() {
+  local dir="${1:-$lock_dir}"
+
+  stat -c %Y "$dir" 2>/dev/null || stat -f %m "$dir" 2>/dev/null
+}
+
+# Seconds since the lock directory last changed, which is when its metadata was
+# written. Fails when the lock is gone.
+lock_age() {
+  local modified
+
+  modified="$(lock_mtime)" || return 1
+  echo $(($(date +%s) - modified))
+}
+
+# Identifies one lock instance, so a reclaim can tell the lock it judged stale
+# from a fresh one created at the same path since. Empty when there is no lock.
+# Takes the directory to read, the lock itself by default.
+lock_record() {
+  local dir="${1:-$lock_dir}" modified
+
+  modified="$(lock_mtime "$dir")" || return 0
+  printf '%s|%s|%s' "$modified" "$(cat "$dir/owner" 2>/dev/null || true)" "$(cat "$dir/started-at" 2>/dev/null || true)"
+}
+
+# Succeeds while a lock is within its launch grace and either has no owner yet
+# or its opener is still running.
+lock_starting() {
+  local owner="$1" pid="$2" age
+
+  age="$(lock_age)" || return 1
+  [ "$age" -lt "$launch_grace_seconds" ] || return 1
+  [ -z "$owner" ] && return 0
+  [[ "$pid" =~ ^[1-9][0-9]*$ ]] && kill -0 "$pid" 2>/dev/null
+}
+
+# Echoes `starting`, `live`, `dead`, or `unknown` for the current lock.
+lock_state() {
+  local owner="$1" pid="$2"
+
+  if lock_starting "$owner" "$pid"; then
+    echo starting
+  elif [ -z "$owner" ]; then
+    echo dead
+  else
+    session_state "$owner"
+  fi
+}
+
+# Line 2 of the owner file is the PID of the `open` that took the lock; older
+# copies of this script read line 1 only.
 write_lock_metadata() {
-  printf '%s\n' "$1" >"$owner_file"
+  printf '%s\n%s\n' "$1" "$$" >"$owner_file"
   date -u '+%Y-%m-%dT%H:%M:%SZ' >"$started_file"
   printf '%s\n' "$workspace" >"$workspace_file"
 }
@@ -132,9 +205,10 @@ print_status() {
   owner="$(current_owner)"
   started="$(sed -n '1p' "$started_file" 2>/dev/null || true)"
   held_workspace="$(sed -n '1p' "$workspace_file" 2>/dev/null || true)"
-  state="$([ -n "$owner" ] && session_state "$owner" || echo unknown)"
+  state="$(lock_state "$owner" "$(opener_pid)")"
 
   case "$state" in
+    starting) echo "pw-session: browser slot is held (browser starting)" ;;
     live) echo "pw-session: browser slot is held" ;;
     dead) echo "pw-session: browser slot is held by a stale lock" ;;
     *) echo "pw-session: browser slot is held (browser state unverifiable)" ;;
@@ -146,6 +220,7 @@ print_status() {
   echo "Lock: $lock_dir"
 
   case "$state" in
+    starting) echo "Browser: starting — the 'open' that took this slot is still launching it" ;;
     live) echo "Browser: running" ;;
     dead)
       echo "Browser: not running — the next 'open' reclaims this slot automatically"
@@ -156,19 +231,28 @@ print_status() {
   esac
 }
 
-# Atomically drop a lock we have confirmed is stale. Renaming first means only
-# one racing reclaimer can win, so a concurrent fresh lock is never deleted.
+# Drop a lock judged stale. The verdict needs a `playwright-cli list` call, so
+# reclaimers take turns through a second directory and re-check the lock inside
+# it. `release` and a new `open` do not take that turn and can replace the lock
+# between the re-check and the move, so the moved lock is checked again: a lock
+# other than the one judged stale is never deleted, and is put back.
 reclaim_stale_lock() {
-  local owner="$1" staged="${lock_dir}.stale.$$"
+  local owner="$1" judged="$2" staged="${lock_dir}.stale.$$"
 
-  if mv "$lock_dir" "$staged" 2>/dev/null; then
-    rm -rf "$staged"
-    echo "pw-session: reclaimed stale slot from '$owner' (its browser is no longer running)" >&2
+  mkdir "$reclaim_dir" 2>/dev/null || return 0
+  if [ -n "$judged" ] && [ "$(lock_record)" = "$judged" ] && mv "$lock_dir" "$staged" 2>/dev/null; then
+    if [ "$(lock_record "$staged")" = "$judged" ]; then
+      rm -rf "$staged"
+      echo "pw-session: reclaimed stale slot from '$owner' (its browser is no longer running)" >&2
+    elif [ -e "$lock_dir" ] || ! mv "$staged" "$lock_dir" 2>/dev/null; then
+      echo "pw-session: a lock that replaced the stale one could not be put back; it is at $staged" >&2
+    fi
   fi
+  rmdir "$reclaim_dir"
 }
 
 acquire() {
-  local session="$1" wait_seconds="$2" owner state reclaims=0
+  local session="$1" wait_seconds="$2" record owner state reclaims=0
 
   validate_session "$session"
   mkdir -p "$(dirname "$lock_dir")"
@@ -181,19 +265,24 @@ acquire() {
       return 0
     fi
 
+    # Read before the verdict, so a reclaim acts only on the lock it judged.
+    record="$(lock_record)"
     owner="$(current_owner)"
-    state="$([ -n "$owner" ] && session_state "$owner" || echo dead)"
+    state="$(lock_state "$owner" "$(opener_pid)")"
 
     # Bounded so an unremovable lock directory fails loudly instead of spinning.
     if [ "$state" = dead ] && [ "$reclaims" -lt 3 ]; then
       reclaims=$((reclaims + 1))
-      reclaim_stale_lock "${owner:-unknown}"
+      reclaim_stale_lock "${owner:-unknown}" "$record"
       continue
     fi
 
     if [ "$state" = dead ]; then
       print_status >&2
       echo "pw-session: could not reclaim the stale slot at $lock_dir; remove it by hand" >&2
+      if [ -d "$reclaim_dir" ]; then
+        echo "pw-session: another reclaim is running or was interrupted: $reclaim_dir" >&2
+      fi
       return 75
     fi
 
@@ -214,7 +303,7 @@ acquire() {
 }
 
 release() {
-  local session="$1" owner
+  local session="$1" owner elsewhere
 
   validate_session "$session"
   if [ ! -d "$lock_dir" ]; then
@@ -225,9 +314,14 @@ release() {
   owner="$(current_owner)"
   if [ "$owner" != "$session" ]; then
     echo "pw-session: '$session' cannot release the slot held by '${owner:-unknown}'" >&2
-    if [ -n "$owner" ] && [ "$(session_state "$owner")" = dead ]; then
+    if [ -n "$owner" ] && [ "$(lock_state "$owner" "$(opener_pid)")" = dead ]; then
       echo "pw-session: that lock is stale; the next 'open' reclaims it automatically" >&2
     fi
+    return 1
+  fi
+
+  if elsewhere="$(held_elsewhere)"; then
+    echo "pw-session: '$session' is held from another workspace ($elsewhere); release it from there" >&2
     return 1
   fi
 
@@ -295,6 +389,11 @@ case "$command" in
     # Cleanup must always stop the browser, even when the lock was lost, so a
     # failed workflow cannot strand a running engine.
     owner="$(current_owner)"
+    # The same name held from another workspace is that holder's browser.
+    if [ "$owner" = "$session" ] && elsewhere="$(held_elsewhere)"; then
+      echo "pw-session: '$session' is held from another workspace ($elsewhere); not closing it from $workspace" >&2
+      exit 1
+    fi
     close_status=0
     "$playwright_cli" -s="$session" close || close_status=$?
     if [ "$close_status" -ne 0 ]; then

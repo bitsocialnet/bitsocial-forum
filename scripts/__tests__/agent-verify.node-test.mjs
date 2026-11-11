@@ -13,6 +13,8 @@ function fixture(t) {
   const lockPath = path.join(root, 'verify.lock');
   const logPath = path.join(root, 'commands.log');
   const script = path.join(root, 'fake-command.mjs');
+  // A gated command stops waiting once cleanup removes its log, so one orphaned by a failing
+  // test cannot hold the runner's output pipe open and hang the test file.
   writeFileSync(
     script,
     `
@@ -20,7 +22,10 @@ import { appendFileSync, existsSync } from 'node:fs';
 import { setTimeout } from 'node:timers/promises';
 const [log, label, code, gate] = process.argv.slice(2);
 appendFileSync(log, label + ':start\\n');
-if (gate) while (!existsSync(gate)) await setTimeout(10);
+if (gate) while (!existsSync(gate)) {
+  if (!existsSync(log)) process.exit(1);
+  await setTimeout(10);
+}
 else await setTimeout(10);
 appendFileSync(log, label + ':end\\n');
 if (code === 'signal') process.kill(process.pid, 'SIGTERM');
@@ -170,13 +175,37 @@ test('separate processes and worktrees share an atomic slot and busy attempts do
   assert.equal(existsSync(lockPath), false);
 });
 
-test('unknown or stale lock metadata is not removed automatically', async (t) => {
+test('unreadable lock metadata is not removed automatically', async (t) => {
   const { lockPath, logPath, command, options } = fixture(t);
   mkdirSync(lockPath);
   writeFileSync(path.join(lockPath, 'owner.json'), '{unreadable');
   assert.equal(await runVerification({ ...options, commands: [command('must-not-run')] }), 75);
   assert.equal(existsSync(logPath), false);
   assert.equal(readFileSync(path.join(lockPath, 'owner.json'), 'utf8'), '{unreadable');
+});
+
+test('a lock whose owner process is gone is reclaimed instead of blocking every later run', async (t) => {
+  const { lockPath, logPath, command, options, output } = fixture(t);
+  const exitedPid = spawnSync(process.execPath, ['-e', '']).pid;
+  mkdirSync(lockPath);
+  writeFileSync(path.join(lockPath, 'owner.json'), JSON.stringify({ pid: exitedPid, cwd: '/elsewhere', startedAt: '2026-01-01T00:00:00.000Z', token: 'dead-owner' }));
+  assert.equal(await runVerification({ ...options, commands: [command('build')] }), 0);
+  assert.match(output.join('\n'), new RegExp(`Reclaimed .*PID ${exitedPid}`));
+  assert.equal(readFileSync(logPath, 'utf8'), 'build:start\nbuild:end\n');
+  assert.equal(existsSync(lockPath), false);
+});
+
+test('a stale lock is left alone while another run is reclaiming it', async (t) => {
+  const { lockPath, logPath, command, options, output } = fixture(t);
+  const exitedPid = spawnSync(process.execPath, ['-e', '']).pid;
+  mkdirSync(lockPath);
+  writeFileSync(path.join(lockPath, 'owner.json'), JSON.stringify({ pid: exitedPid, cwd: '/elsewhere', startedAt: '2026-01-01T00:00:00.000Z', token: 'dead-owner' }));
+  mkdirSync(`${lockPath}.reclaim`);
+  assert.equal(await runVerification({ ...options, commands: [command('must-not-run')] }), 75);
+  assert.match(output.join('\n'), /no longer running/);
+  assert.ok(output.join('\n').includes(`${lockPath}.reclaim`), 'the busy message names the held reclaim turn');
+  assert.equal(existsSync(logPath), false);
+  assert.equal(existsSync(path.join(lockPath, 'owner.json')), true);
 });
 
 test('a replaced lock is preserved and reported as a failure', async (t) => {
@@ -202,6 +231,19 @@ test('termination forwards to the active command, stops later checks, and releas
   const result = await run.completed;
   assert.equal(result.code, 143);
   assert.match(result.output, /signal SIGTERM/);
+  assert.equal(readFileSync(logPath, 'utf8'), 'build:start\n');
+  assert.equal(existsSync(lockPath), false);
+});
+
+test('a hangup forwards to the active command and releases the lock', { timeout: 10_000 }, async (t) => {
+  const { root, lockPath, logPath, command } = fixture(t);
+  const run = launchVerification({ cwd: root, lockPath, commands: [command('build', 0, path.join(root, 'never-created')), command('must-not-run')] });
+  t.after(() => run.child.kill('SIGTERM'));
+  await waitForFile(logPath);
+  run.child.kill('SIGHUP');
+  const result = await run.completed;
+  assert.equal(result.code, 129);
+  assert.match(result.output, /signal SIGHUP/);
   assert.equal(readFileSync(logPath, 'utf8'), 'build:start\n');
   assert.equal(existsSync(lockPath), false);
 });
