@@ -19,6 +19,20 @@ describe('formatSearchQuery and getSearchPath', () => {
     expect(parseSearchQuery(formatSearchQuery(query))).toEqual(query);
   });
 
+  it('round-trips tags with quotes, backslashes and edge spaces exactly', () => {
+    for (const tag of ['"WIP"', ' padded', 'C++ "std"', 'back\\slash', 'ends with \\']) {
+      const query = { text: 'crash', tags: [tag] };
+      expect(parseSearchQuery(formatSearchQuery(query))).toEqual(query);
+      // A tag link must find the topic it was clicked on.
+      const q = new URLSearchParams(getSearchPath({ tags: [tag] }).split('?')[1]).get('q') ?? '';
+      expect(getSearchFeedFilter(parseSearchQuery(q))!.filter({ title: 'x', flairs: [{ text: tag }] })).toBe(true);
+    }
+  });
+
+  it('keeps existing links with quoted tags working', () => {
+    expect(parseSearchQuery('tag:"Feature request" section:" bso "')).toEqual({ text: '', tags: ['Feature request'], section: 'bso' });
+  });
+
   it('builds the search page URL', () => {
     expect(getSearchPath({ section: 'bso', tags: ['Chain'] })).toBe('/search?q=section%3Abso+tag%3AChain');
     expect(getSearchPath('  ')).toBe('/search');

@@ -88,6 +88,20 @@ describe('Search', () => {
     expect(container.querySelector('a[href="/search?q=section%3Aseedit+tag%3ABug"]')?.textContent).toBe('Bug');
   });
 
+  it('searches the community when a query names both a community and an unknown section', async () => {
+    await renderAt('/search?q=section%3Abogus+community%3Aaskseedit.bso+tag%3ABug');
+
+    expect(container.textContent).not.toContain('search.unknownSection');
+    expect(testState.feedCalls[0]).toMatchObject({ communities: [{ name: 'askseedit.bso' }], filter: { key: 'search:tag:Bug' } });
+  });
+
+  it('reports an unknown section', async () => {
+    await renderAt('/search?q=section%3Abogus+tag%3ABug');
+
+    expect(testState.feedCalls).toHaveLength(0);
+    expect(container.textContent).toContain('search.unknownSection');
+  });
+
   it('explains a section with no community instead of searching nothing', async () => {
     await renderAt('/search?q=section%3Aempty+tag%3AX');
 
