@@ -138,7 +138,9 @@ held_elsewhere() {
 }
 
 lock_mtime() {
-  stat -c %Y "$lock_dir" 2>/dev/null || stat -f %m "$lock_dir" 2>/dev/null
+  local dir="${1:-$lock_dir}"
+
+  stat -c %Y "$dir" 2>/dev/null || stat -f %m "$dir" 2>/dev/null
 }
 
 # Seconds since the lock directory last changed, which is when its metadata was
@@ -152,11 +154,12 @@ lock_age() {
 
 # Identifies one lock instance, so a reclaim can tell the lock it judged stale
 # from a fresh one created at the same path since. Empty when there is no lock.
+# Takes the directory to read, the lock itself by default.
 lock_record() {
-  local modified
+  local dir="${1:-$lock_dir}" modified
 
-  modified="$(lock_mtime)" || return 0
-  printf '%s|%s|%s' "$modified" "$(cat "$owner_file" 2>/dev/null || true)" "$(cat "$started_file" 2>/dev/null || true)"
+  modified="$(lock_mtime "$dir")" || return 0
+  printf '%s|%s|%s' "$modified" "$(cat "$dir/owner" 2>/dev/null || true)" "$(cat "$dir/started-at" 2>/dev/null || true)"
 }
 
 # Succeeds while a lock is within its launch grace and either has no owner yet
@@ -230,14 +233,20 @@ print_status() {
 
 # Drop a lock judged stale. The verdict needs a `playwright-cli list` call, so
 # reclaimers take turns through a second directory and re-check the lock inside
-# it: one acting on an old verdict never deletes a fresh lock created since.
+# it. `release` and a new `open` do not take that turn and can replace the lock
+# between the re-check and the move, so the moved lock is checked again: a lock
+# other than the one judged stale is never deleted, and is put back.
 reclaim_stale_lock() {
   local owner="$1" judged="$2" staged="${lock_dir}.stale.$$"
 
   mkdir "$reclaim_dir" 2>/dev/null || return 0
   if [ -n "$judged" ] && [ "$(lock_record)" = "$judged" ] && mv "$lock_dir" "$staged" 2>/dev/null; then
-    rm -rf "$staged"
-    echo "pw-session: reclaimed stale slot from '$owner' (its browser is no longer running)" >&2
+    if [ "$(lock_record "$staged")" = "$judged" ]; then
+      rm -rf "$staged"
+      echo "pw-session: reclaimed stale slot from '$owner' (its browser is no longer running)" >&2
+    elif [ -e "$lock_dir" ] || ! mv "$staged" "$lock_dir" 2>/dev/null; then
+      echo "pw-session: a lock that replaced the stale one could not be put back; it is at $staged" >&2
+    fi
   fi
   rmdir "$reclaim_dir"
 }

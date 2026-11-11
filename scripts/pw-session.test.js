@@ -50,6 +50,21 @@ esac
 exit 0
 `;
 
+// Put first on PATH, this `mv` replaces the lock once just before the script
+// moves it: the stale holder releases and another open takes the slot between a
+// reclaimer's last check and its move.
+const SWAPPING_MV = `#!/bin/bash
+lock="$PLAYWRIGHT_RESOURCE_LOCK_DIR"
+if [ "$1" = "$lock" ] && [ ! -e "$lock.swapped" ]; then
+  : >"$lock.swapped"
+  rm -rf "$lock"
+  mkdir "$lock"
+  printf 'verify-webkit\\n' >"$lock/owner"
+  echo 2026-01-02T00:00:00Z >"$lock/started-at"
+fi
+exec /bin/mv "$@"
+`;
+
 let tempDir;
 
 // Status and diagnostics are split across stdout and stderr, so assertions read
@@ -249,6 +264,20 @@ describe('pw-session.sh', () => {
     expect((await late).code).toBe(75);
     expect(lockOwner()).toBe('verify-webkit');
     expect(liveSession()).toBe('verify-webkit');
+  });
+
+  it('puts back a lock that replaced the stale one just before the reclaim moved it', async () => {
+    writeLock('verify-chrome', exitedPid()); // stale: its browser and opener are gone
+    const shim = path.join(tempDir, 'shim');
+    fs.mkdirSync(shim);
+    fs.writeFileSync(path.join(shim, 'mv'), SWAPPING_MV, { mode: 0o755 });
+    setLiveSession('verify-webkit');
+
+    const late = await startWith({ PATH: `${shim}:${process.env.PATH}` }, 'open', 'verify-firefox', 'about:blank');
+    expect(late.code).toBe(75);
+    expect(late.output).not.toContain('reclaimed');
+    expect(lockOwner()).toBe('verify-webkit');
+    expect(fs.readdirSync(tempDir).filter((name) => name.includes('.stale.'))).toEqual([]);
   });
 
   it('leaves a stale lock alone while another reclaim holds its turn', () => {
