@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.29.7",
-    "@bitsocial/bitsocial-react-hooks": "0.2.4",
+    "@bitsocial/bitsocial-react-hooks": "0.2.5",
     "@playwright/cli": "0.1.22",
     "@radix-ui/react-slot": "1.2.4",
     "@rolldown/plugin-babel": "0.2.4",
