@@ -39,7 +39,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <ul className='flex flex-col gap-0.5'>
             {category.sections.map((section) => (
               <li key={section.code}>
-                <NavLink to={`/s/${section.code}`} onClick={onNavigate} className={navItemClassName}>
+                <NavLink to={`/${section.code}`} onClick={onNavigate} className={navItemClassName}>
                   <span aria-hidden='true' className='h-2.5 w-2.5 shrink-0 rounded-[2px]' style={{ backgroundColor: section.color }} />
                   <span className='truncate'>{section.title}</span>
                 </NavLink>

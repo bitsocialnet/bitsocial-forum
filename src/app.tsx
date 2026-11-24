@@ -48,9 +48,11 @@ export default function App() {
               <Route path='/inbox' element={<Inbox />} />
               <Route path='/profile' element={<Profile />} />
               <Route path='/search' element={<Search />} />
-              <Route path='/s/:sectionCode/:sort?' element={<Section />} />
               <Route path='/c/:communityAddress/t/:commentCid' element={<Topic />} />
               <Route path='/c/:communityAddress/:sort?' element={<Community />} />
+              {/* Sections have no prefix, like 5chan's boards. Static routes above outrank this one, so a
+                  section code must never equal their first segment (checked in lib/__tests__/sections.test.ts). */}
+              <Route path='/:sectionCode/:sort?' element={<Section />} />
               <Route path='*' element={<NotFound />} />
             </Routes>
           </main>

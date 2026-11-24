@@ -56,7 +56,7 @@ export default function Categories() {
                     return (
                       <tr key={section.code} className='border-b border-border/50 align-top'>
                         <td className='border-s-4 py-4 pe-4 ps-5' style={{ borderInlineStartColor: section.color }}>
-                          <Link to={`/s/${section.code}`} className='text-base font-semibold text-foreground transition-colors hover:text-blue-glow'>
+                          <Link to={`/${section.code}`} className='text-base font-semibold text-foreground transition-colors hover:text-blue-glow'>
                             {section.title}
                           </Link>
                           <p className='mt-1 text-sm leading-relaxed text-muted-foreground'>{section.description}</p>

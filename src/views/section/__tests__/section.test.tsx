@@ -46,7 +46,7 @@ async function renderAt(path: string) {
     root.render(
       <MemoryRouter initialEntries={[path]}>
         <Routes>
-          <Route path='/s/:sectionCode/:sort?' element={<Section />} />
+          <Route path='/:sectionCode/:sort?' element={<Section />} />
         </Routes>
       </MemoryRouter>,
     );
@@ -67,7 +67,7 @@ afterEach(async () => {
 
 describe('Section', () => {
   it('opens the highest-ranked candidate and lists the others', async () => {
-    await renderAt('/s/bso');
+    await renderAt('/bso');
 
     expect(testState.feedCalls[0]).toMatchObject({ communities: [{ name: 'chain-one.bso' }], sortType: 'active' });
     expect(container.querySelector('a[href="/c/chain-one.bso/t/QmThread"]')?.textContent).toBe('Chain launch plan');
@@ -76,34 +76,34 @@ describe('Section', () => {
   });
 
   it('maps the sort tab in the URL to a pkc page sort', async () => {
-    await renderAt('/s/bso/new');
+    await renderAt('/bso/new');
 
     expect(testState.feedCalls[0]).toMatchObject({ sortType: 'new' });
-    expect(container.querySelector('a[aria-current="page"]')?.getAttribute('href')).toBe('/s/bso/new');
+    expect(container.querySelector('a[aria-current="page"]')?.getAttribute('href')).toBe('/bso/new');
   });
 
   it('links tags to a search scoped to the section', async () => {
-    await renderAt('/s/bso');
+    await renderAt('/bso');
 
     expect(container.querySelector('a[href="/search?q=section%3Abso+tag%3AChain"]')?.textContent).toBe('Chain');
   });
 
   it('treats an unknown sort tab as a missing page', async () => {
-    await renderAt('/s/bso/sideways');
+    await renderAt('/bso/sideways');
 
     expect(testState.feedCalls).toHaveLength(0);
     expect(container.textContent).toContain('section.notFound');
   });
 
   it('explains an empty section instead of loading a feed', async () => {
-    await renderAt('/s/empty');
+    await renderAt('/empty');
 
     expect(testState.feedCalls).toHaveLength(0);
     expect(container.textContent).toContain('section.noCommunityTitle');
   });
 
   it('reports an unknown section code', async () => {
-    await renderAt('/s/missing');
+    await renderAt('/missing');
 
     expect(container.textContent).toContain('section.notFound');
   });

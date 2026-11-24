@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import appSource from '../../app.tsx?raw';
 import { FORUM_CATEGORIES, type ForumCategory } from '../../data/sections';
 import { getSection, getSectionCategory, getSectionForCommunity, getSectionWinner } from '../sections';
 
@@ -10,6 +11,16 @@ describe('forum taxonomy', () => {
     expect(new Set(codes).size).toBe(codes.length);
     for (const code of codes) {
       expect(code).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+    }
+  });
+
+  // Sections are top-level routes (`/:code`), so a code that equals another route's first segment
+  // would be unreachable. Reading the routes from app.tsx also catches a new route that takes a code.
+  it('keeps section codes clear of the other top-level routes', () => {
+    const routeSegments = [...appSource.matchAll(/<Route path='\/([^'/:*]+)/g)].map((match) => match[1]);
+    expect(routeSegments).toEqual(expect.arrayContaining(['about', 'c', 'inbox', 'profile', 'search']));
+    for (const section of allSections) {
+      expect(routeSegments).not.toContain(section.code);
     }
   });
 

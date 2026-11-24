@@ -31,7 +31,7 @@ export default function AboutSections() {
             </h2>
             <p className='mt-2 text-[15px] leading-relaxed text-muted-foreground'>{t(`aboutSections.${block}.body`)}</p>
             {block === 'startCommunity' ? (
-              <Link to='/s/general' className='mt-3 inline-flex text-sm text-blue-glow hover:underline'>
+              <Link to='/general' className='mt-3 inline-flex text-sm text-blue-glow hover:underline'>
                 {t('aboutSections.startCommunity.link')}
               </Link>
             ) : null}

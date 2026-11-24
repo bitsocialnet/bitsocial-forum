@@ -8,7 +8,7 @@ Bitsocial discussion is currently split across Telegram, Twitter and GitHub. The
 
 ## How sections work
 
-The forum is not one community. Each section (`/s/bso`, `/s/pkc`, `/s/5chan`, ...) is a [directory](https://docs.bitsocial.net/directories): a topic name that communities compete for. A section opens whichever community currently ranks first for it, and that community's own moderators run it. If a section's community goes away or is run badly, another community can take the section over without anyone's permission, the same way Seedit's and 5chan's directories work.
+The forum is not one community. Each section (`/bso`, `/pkc`, `/5chan`, ...) is a [directory](https://docs.bitsocial.net/directories): a topic name that communities compete for. A section opens whichever community currently ranks first for it, and that community's own moderators run it. If a section's community goes away or is run badly, another community can take the section over without anyone's permission, the same way Seedit's and 5chan's directories work.
 
 - The client decides which sections exist. The draft list is in [docs/sections.md](docs/sections.md).
 - Communities decide what happens inside a section. Flairs label topics by project and type.

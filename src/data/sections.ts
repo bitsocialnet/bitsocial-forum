@@ -4,7 +4,8 @@
 // winners move to a directory file and then to voting.
 
 export type ForumSection = {
-  /** Directory code: the route segment in `/s/:code`, stable once published. */
+  /** Directory code: the top-level route segment (`/:code`), stable once published. It must not equal the
+   * first segment of another route in `app.tsx` (`about`, `c`, `inbox`, `profile`, `search`). */
   code: string;
   /** Category color, as in Discourse: the badge square and the row's left border. */
   color: string;
@@ -12,7 +13,7 @@ export type ForumSection = {
   description: string;
   /** Suggested post flairs for the section's communities: projects and thread types. */
   flairs: string[];
-  /** Community addresses competing for the code, highest-ranked first. The first one opens at `/s/:code`. */
+  /** Community addresses competing for the code, highest-ranked first. The first one opens at `/:code`. */
   candidates: string[];
 };
 

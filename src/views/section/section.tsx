@@ -55,7 +55,7 @@ export default function Section() {
       </header>
 
       <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
-        <SortTabs basePath={`/s/${section.code}`} active={sort} />
+        <SortTabs basePath={`/${section.code}`} active={sort} />
         <Button disabled title={t('topics.postingSoon')}>
           <Plus aria-hidden />
           {t('topics.newTopic')}

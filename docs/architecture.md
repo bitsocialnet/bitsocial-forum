@@ -4,7 +4,7 @@ This records what the forum is built on and why. Change it when a decision chang
 
 ## Sections are directories, not one community
 
-**Decision.** Each forum section is a [directory](https://docs.bitsocial.net/directories): a code such as `bso` or `pkc` that communities compete for. `/s/:code` opens the highest-ranked candidate community. The forum is never a single community such as `forum.bitsocial.bso`.
+**Decision.** Each forum section is a [directory](https://docs.bitsocial.net/directories): a code such as `bso` or `pkc` that communities compete for. `/:code` opens the highest-ranked candidate community. The forum is never a single community such as `forum.bitsocial.bso`.
 
 **Why.**
 
@@ -60,7 +60,7 @@ The repository stays private until profiles work through Forge RPC.
 ## Routing and deployment
 
 - Hash routing, as in Seedit and 5chan, so one static build works at `forum.bitsocial.net`, on IPFS gateways and from `file://`. Vite builds with a relative base.
-- Routes: `/` categories, `/s/:code/:sort?` section, `/c/:address/:sort?` community, `/c/:address/t/:cid` topic, `/profile` the active account, `/about/sections` how sections work, `/search?q=` search. `:sort` is `new` or `top`; Latest has no segment.
+- Routes: `/` categories, `/:code/:sort?` section, `/c/:address/:sort?` community, `/c/:address/t/:cid` topic, `/profile` the active account, `/about/sections` how sections work, `/search?q=` search. `:sort` is `new` or `top`; Latest has no segment. Sections have no prefix, like 5chan's boards, so a section code can never equal the first segment of another route (`about`, `c`, `inbox`, `profile`, `search`), and a new top-level route has to avoid every published code; a test enforces both.
 
 ## Search
 
