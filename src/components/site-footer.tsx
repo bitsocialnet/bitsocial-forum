@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { BITSOCIAL_FORGE_URL, BITSOCIAL_URL, DOCS_URL, GITHUB_URL, STATS_URL, TELEGRAM_URL, TWITTER_URL } from '../lib/site';
+import { BITSOCIAL_URL, DOCS_URL, GITHUB_URL, STATS_URL, TELEGRAM_URL, TWITTER_URL } from '../lib/site';
 
-// A compact version of bitsocial.net's glass footer, with the forum's credit at bottom right.
+// A compact version of bitsocial.net's glass footer, with the forum's version and license at bottom right.
 export default function SiteFooter() {
   const { t } = useTranslation();
   const links = [
@@ -25,16 +25,7 @@ export default function SiteFooter() {
             </li>
           ))}
         </ul>
-        <a
-          href={BITSOCIAL_FORGE_URL}
-          target='_blank'
-          rel='noopener noreferrer'
-          dir='ltr'
-          className='inline-flex items-center gap-2 font-display tracking-wide text-muted-foreground/80 transition-colors hover:text-foreground'
-        >
-          <img src='./bitsocial-forge-logo.svg' width={18} height={18} alt='' aria-hidden='true' className='h-[18px] w-[18px]' />
-          {t('footer.byForge')}
-        </a>
+        <p className='font-display tracking-wide text-muted-foreground/80'>{t('footer.version', { version: import.meta.env.VITE_APP_VERSION })}</p>
       </div>
     </footer>
   );

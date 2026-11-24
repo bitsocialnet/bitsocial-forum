@@ -138,6 +138,6 @@
     "docs": "Docs",
     "bitsocial": "Bitsocial",
     "stats": "Network stats",
-    "byForge": "by Bitsocial Forge Inc."
+    "version": "Version: {{version}} - GPLv3"
   }
 }

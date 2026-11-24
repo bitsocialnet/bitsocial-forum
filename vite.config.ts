@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
@@ -6,6 +7,7 @@ import autoprefixer from 'autoprefixer';
 import tailwindcss from 'tailwindcss';
 
 const srcDir = fileURLToPath(new URL('./src', import.meta.url));
+const appVersion: string = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version;
 const devServerHmr = (() => {
   if (!process.env.PORTLESS_URL) {
     return { overlay: false };
@@ -74,6 +76,8 @@ export default defineConfig({
     include: ['assert', 'buffer', 'process', 'util', 'stream-browserify', 'isomorphic-fetch'],
   },
   define: {
+    // Shown in the footer; read from package.json so a release bump is the only place to change it.
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
     'process.version': JSON.stringify(''),
     global: 'globalThis',
     __dirname: '""',

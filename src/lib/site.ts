@@ -8,8 +8,6 @@ export const CONTENT_DISCOVERY_DOCS_URL = 'https://docs.bitsocial.net/content-di
 
 export const STATS_URL = 'https://stats.bitsocial.net' as const;
 
-export const BITSOCIAL_FORGE_URL = 'https://bitsocialforge.com' as const;
-
 export const GITHUB_URL = 'https://github.com/bitsocialnet' as const;
 
 export const TWITTER_URL = 'https://twitter.com/bitsocialnet' as const;
