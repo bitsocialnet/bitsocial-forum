@@ -27,6 +27,8 @@
   "section": {
     "notFound": "Section not found",
     "heldBy": "Held by",
+    "copyAddress": "Copy community address",
+    "addressCopied": "Address copied",
     "noCommunityShort": "No community yet",
     "noCommunityTitle": "No community holds this section yet",
     "noCommunityDescription": "A section opens whichever community ranks first for it. Once a community is listed as a candidate, its topics appear here.",

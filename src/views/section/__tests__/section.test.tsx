@@ -32,6 +32,7 @@ vi.mock('../../../data/sections', () => ({
       title: 'Bitsocial',
       sections: [
         { code: 'bso', color: '#f59e0b', title: 'BSO', description: 'Token talk', flairs: ['Chain'], candidates: ['chain-one.bso', 'chain-two.bso'] },
+        { code: 'key', color: '#22d3ee', title: 'Key', description: 'Held by a key', flairs: [], candidates: ['12D3KooWKYshQ7mJp4Zr8tVwX2nB6cL9dFgH3kRsT5uYaEiOoPq1'] },
         { code: 'empty', color: '#6b7280', title: 'Empty', description: 'Nobody yet', flairs: [], candidates: [] },
       ],
     },
@@ -86,6 +87,21 @@ describe('Section', () => {
     await renderAt('/bso');
 
     expect(container.querySelector('a[href="/search?q=section%3Abso+tag%3AChain"]')?.textContent).toBe('Chain');
+  });
+
+  it('shows the full address of the community holding the section and copies it', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
+    const address = '12D3KooWKYshQ7mJp4Zr8tVwX2nB6cL9dFgH3kRsT5uYaEiOoPq1';
+    await renderAt('/key');
+
+    expect(container.querySelector(`a[href="/c/${address}"]`)?.textContent).toBe(address);
+    await act(async () => {
+      container.querySelector<HTMLButtonElement>('button[aria-label="section.copyAddress"]')?.click();
+    });
+    expect(writeText).toHaveBeenCalledWith(address);
+    expect(container.querySelector('[role="status"]')?.textContent).toBe('section.addressCopied');
+    vi.unstubAllGlobals();
   });
 
   it('treats an unknown sort tab as a missing page', async () => {

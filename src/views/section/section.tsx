@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import Banner from '../../components/banner';
 import { Button } from '../../components/button';
+import CopyButton from '../../components/copy-button';
 import NotFoundMessage from '../../components/not-found-message';
 import SortTabs from '../../components/sort-tabs';
 import TagList from '../../components/tag-list';
@@ -44,11 +45,16 @@ export default function Section() {
         </Banner>
         <p className='mt-4 text-sm text-muted-foreground'>{section.description}</p>
         {winner ? (
-          <p className='mt-1 text-xs text-muted-foreground'>
-            {t('section.heldBy')}{' '}
-            <Link to={`/c/${winner}`} className='text-blue-glow hover:underline'>
-              {getShortAddress(winner)}
-            </Link>
+          // The full address, not the short form: it is what another client needs to open this community.
+          <p className='mt-1 flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground'>
+            {t('section.heldBy')}
+            {/* Kept in one row so the copy button stays beside the address when it wraps on narrow screens. */}
+            <span className='flex min-w-0 items-center gap-1.5'>
+              <Link to={`/c/${winner}`} className='min-w-0 break-all text-blue-glow hover:underline'>
+                {winner}
+              </Link>
+              <CopyButton text={winner} label={t('section.copyAddress')} copiedLabel={t('section.addressCopied')} />
+            </span>
           </p>
         ) : null}
         <TagList tags={section.flairs.map((text) => ({ text }))} getTagPath={getTagPath} className='mt-3' />

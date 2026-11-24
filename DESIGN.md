@@ -43,6 +43,7 @@ Tokens and surfaces are in `src/index.css`, copied from bitsocial-web's chain si
 - **Topic lists:** Latest / New / Top pills above a table with Topic, Replies and Activity. Replies hides below `sm`. Activity uses compact ages (`5m`, `3h`, `2d`, then a date) with the full date in a tooltip.
 - **Topics:** oldest first, no nesting. Each post has a 44px avatar column, then name, short address and age, then the body. Posting controls sit under the thread.
 - **Avatars:** a letter avatar in a color derived from the address when the author has a display name; otherwise the default person icon on a grey circle, with a hairline ring in light mode so it does not blend into white surfaces.
+- **Section header:** under the description, "Held by" and the full address of the community holding the section (a link to its page), followed by a small copy icon button so the address can be taken to another client.
 - **Footer:** one row of links with the app version and license ("Version: 0.1.0 - GPLv3") at bottom right.
 
 ## Theme (from bitsocial-web)
