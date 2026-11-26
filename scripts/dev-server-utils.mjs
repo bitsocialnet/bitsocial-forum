@@ -11,7 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const repoRoot = path.resolve(__dirname, '..');
 export const isWindows = process.platform === 'win32';
 
-function checkPort(port) {
+function checkPort(port, host) {
   return new Promise((resolve) => {
     const server = net.createServer();
 
@@ -19,14 +19,17 @@ function checkPort(port) {
     server.once('listening', () => {
       server.close(() => resolve(true));
     });
-    server.listen(port);
+    server.listen(port, host);
   });
 }
 
-export async function resolvePort(requestedPort) {
+// Also probe the host the server will bind: on macOS a wildcard listen succeeds
+// while another process holds the port on 127.0.0.1, and a 127.0.0.1 listen
+// succeeds while another holds it on the wildcard address.
+export async function resolvePort(requestedPort, host) {
   let port = requestedPort;
 
-  while (!(await checkPort(port))) {
+  while (!(await checkPort(port)) || (host !== undefined && !(await checkPort(port, host)))) {
     port += 1;
   }
 
