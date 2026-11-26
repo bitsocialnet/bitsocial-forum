@@ -1,5 +1,6 @@
 import { useFeed, type Comment } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
+import { useCommunitiesLoadStatus } from '../../hooks/use-communities-load-status';
 import { toCommunityIdentifier } from '../../lib/community-identifier';
 import { Button } from '../button';
 import TopicRow from './topic-row';
@@ -30,10 +31,21 @@ export default function TopicList({
     postsPerPage: TOPICS_PER_PAGE,
     filter,
   });
+  const loadStatus = useCommunitiesLoadStatus(communityAddresses);
   const now = Date.now();
 
   if (feed.length === 0) {
-    return <p className='glass-panel px-6 py-10 text-center text-sm text-muted-foreground'>{hasMore ? t('topics.loading') : (emptyMessage ?? t('topics.empty'))}</p>;
+    return (
+      <p className='glass-panel px-6 py-10 text-center text-sm text-muted-foreground'>
+        {loadStatus === 'unreachable'
+          ? t('topics.unreachable', { count: communityAddresses.length })
+          : loadStatus === 'retrying'
+            ? t('topics.retrying', { count: communityAddresses.length })
+            : hasMore
+              ? t('topics.loading')
+              : (emptyMessage ?? t('topics.empty'))}
+      </p>
+    );
   }
 
   return (

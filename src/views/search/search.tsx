@@ -80,7 +80,7 @@ export default function Search() {
               ))}
           </div>
         </section>
-      ) : query.section && !section ? (
+      ) : query.section && !section && !query.community ? (
         <p className='glass-panel px-6 py-8 text-sm text-muted-foreground'>{t('search.unknownSection', { section: query.section })}</p>
       ) : communityAddresses.length === 0 ? (
         <div className='glass-panel px-6 py-8'>

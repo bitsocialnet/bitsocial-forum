@@ -17,35 +17,43 @@ export default function Topic() {
   const { communityAddress, commentCid } = useParams();
   const comment = useComment({ commentCid, community: communityAddress ? toCommunityIdentifier(communityAddress) : undefined });
   const { replies, hasMore, loadMore } = useReplies({ comment: comment.cid ? comment : undefined, sortType: 'old', flat: true });
-  const section = getSectionForCommunity(communityAddress);
+  // Before the topic loads, the hooks hold a placeholder with only its cid, so a timestamp is what
+  // marks it loaded. A topic pkc-js gave up on, such as an invalid record, is 'failed' instead.
+  const isLoaded = typeof comment.timestamp === 'number';
+  const isFailed = !isLoaded && comment.state === 'failed';
   const now = Date.now();
 
   if (!communityAddress || !commentCid) {
     return <NotFoundMessage />;
   }
 
+  // The URL's community only helps fetch the topic, and pkc-js accepts a topic from another community
+  // unless both are names. Once loaded, label the topic with the community it was posted to.
+  const topicCommunityAddress: string = (isLoaded && comment.communityAddress) || communityAddress;
+  const section = getSectionForCommunity(topicCommunityAddress);
+
   return (
     <div className='max-w-3xl'>
       <header className='mb-6'>
         <h1 className='break-words font-display text-3xl font-semibold leading-tight text-muted-foreground'>
-          {comment.title || (comment.cid ? t('topics.untitled') : t('topic.loading'))}
+          {comment.title || (isLoaded ? t('topics.untitled') : isFailed ? t('topic.loadFailed') : t('topic.loading'))}
         </h1>
         <div className='mt-2 flex flex-wrap items-center gap-3'>
           {section ? (
             <CategoryBadge section={section} />
           ) : (
-            <Link to={`/c/${communityAddress}`} className='text-sm text-muted-foreground hover:text-foreground'>
-              {getShortAddress(communityAddress)}
+            <Link to={`/c/${topicCommunityAddress}`} className='text-sm text-muted-foreground hover:text-foreground'>
+              {getShortAddress(topicCommunityAddress)}
             </Link>
           )}
           <TagList
             tags={comment.flairs}
-            getTagPath={(tag) => getSearchPath(section ? { section: section.code, tags: [tag] } : { community: communityAddress, tags: [tag] })}
+            getTagPath={(tag) => getSearchPath(section ? { section: section.code, tags: [tag] } : { community: topicCommunityAddress, tags: [tag] })}
           />
         </div>
       </header>
 
-      {comment.cid ? (
+      {isLoaded ? (
         <>
           <div className='glass-panel px-5 sm:px-6 [&>article:last-child]:border-b-0'>
             <Post comment={comment} number={1} now={now} />

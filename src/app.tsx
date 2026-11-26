@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import Sidebar from './components/sidebar';
 import SiteFooter from './components/site-footer';
 import SiteHeader from './components/site-header';
@@ -18,8 +18,16 @@ import Topic from './views/topic';
 // Discourse layout: a full-width header, a sections sidebar (a drawer below lg), and the page.
 export default function App() {
   const { t } = useTranslation();
+  const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const closeSidebar = () => setIsSidebarOpen(false);
+  // Any navigation closes the drawer, including header links, search and browser history, which do not
+  // go through the sidebar's links. Adjusting state during render avoids a frame with the drawer open.
+  const [sidebarLocationKey, setSidebarLocationKey] = useState(location.key);
+  if (sidebarLocationKey !== location.key) {
+    setSidebarLocationKey(location.key);
+    setIsSidebarOpen(false);
+  }
 
   return (
     <div className='flex min-h-screen flex-col'>

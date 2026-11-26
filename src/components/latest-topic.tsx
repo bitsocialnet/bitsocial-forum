@@ -1,6 +1,7 @@
 import { useFeed } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { useCommunitiesLoadStatus } from '../hooks/use-communities-load-status';
 import { toCommunityIdentifier } from '../lib/community-identifier';
 import { formatShortAge } from '../lib/time';
 
@@ -8,10 +9,21 @@ import { formatShortAge } from '../lib/time';
 export default function LatestTopic({ communityAddress }: { communityAddress: string }) {
   const { t } = useTranslation();
   const { feed, hasMore } = useFeed({ communities: [toCommunityIdentifier(communityAddress)], sortType: 'new', postsPerPage: 1 });
+  const loadStatus = useCommunitiesLoadStatus([communityAddress]);
   const topic = feed[0];
 
   if (!topic) {
-    return <span className='text-xs text-muted-foreground'>{hasMore ? t('topics.loading') : t('topics.empty')}</span>;
+    return (
+      <span className='text-xs text-muted-foreground'>
+        {loadStatus === 'unreachable'
+          ? t('topics.unreachable', { count: 1 })
+          : loadStatus === 'retrying'
+            ? t('topics.retrying', { count: 1 })
+            : hasMore
+              ? t('topics.loading')
+              : t('topics.empty')}
+      </span>
+    );
   }
 
   return (

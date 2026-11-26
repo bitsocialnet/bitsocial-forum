@@ -17,9 +17,9 @@ export default function Post({ comment, number, now }: { comment: Comment; numbe
             {displayName && address ? <span className='ms-2 text-xs text-muted-foreground'>{address}</span> : null}
           </p>
           {typeof comment.timestamp === 'number' ? (
-            <a href={`#post-${number}`} className='shrink-0 text-xs text-muted-foreground hover:text-foreground' title={formatFullDate(comment.timestamp)}>
+            <time className='shrink-0 text-xs text-muted-foreground' title={formatFullDate(comment.timestamp)}>
               {formatShortAge(comment.timestamp, now)}
-            </a>
+            </time>
           ) : null}
         </header>
         {comment.content ? <div className='mt-2 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-foreground'>{comment.content}</div> : null}

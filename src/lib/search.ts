@@ -11,14 +11,17 @@ export type SearchQuery = {
   community?: string;
 };
 
-const TOKEN_PATTERN = /\b(tag|section|community):(?:"([^"]*)"|(\S+))/gi;
+// A quoted value may contain \" and \\ escapes, so any flair text survives formatSearchQuery.
+const TOKEN_PATTERN = /\b(tag|section|community):(?:"((?:[^"\\]|\\.)*)"|(\S+))/gi;
 
 export function parseSearchQuery(raw: string): SearchQuery {
   const query: SearchQuery = { text: '', tags: [] };
   const text = raw.replace(TOKEN_PATTERN, (_match, key: string, quoted: string | undefined, bare: string | undefined) => {
-    const value = (quoted ?? bare ?? '').trim();
-    if (!value) return ' ';
     const name = key.toLowerCase();
+    const exact = quoted === undefined ? (bare ?? '') : quoted.replace(/\\(["\\])/g, '$1');
+    // Tags are peers' flair text and must match exactly; section codes and addresses are trimmed.
+    const value = name === 'tag' ? exact : exact.trim();
+    if (!value.trim()) return ' ';
     if (name === 'tag' && !query.tags.includes(value)) query.tags.push(value);
     if (name === 'section') query.section = value;
     if (name === 'community') query.community = value;
@@ -29,7 +32,7 @@ export function parseSearchQuery(raw: string): SearchQuery {
 }
 
 function formatToken(key: string, value: string): string {
-  return /\s/.test(value) ? `${key}:"${value}"` : `${key}:${value}`;
+  return /[\s"\\]/.test(value) ? `${key}:"${value.replace(/["\\]/g, '\\$&')}"` : `${key}:${value}`;
 }
 
 export function formatSearchQuery(query: Partial<SearchQuery>): string {
