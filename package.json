@@ -28,7 +28,8 @@
   },
   "devDependencies": {
     "@babel/core": "7.29.7",
-    "@bitsocial/bitsocial-react-hooks": "0.2.5",
+    "@bitsocial/bitsocial-react-hooks": "0.4.2",
+    "@pkcprotocol/pkc-js": "0.0.163",
     "@playwright/cli": "0.1.22",
     "@radix-ui/react-slot": "1.2.4",
     "@rolldown/plugin-babel": "0.2.4",
@@ -80,6 +81,9 @@
     "vite": "8.3.5",
     "vitest": "5.0.5",
     "zustand": "5.0.16"
+  },
+  "resolutions": {
+    "@pkcprotocol/pkc-js": "0.0.163"
   },
   "lint-staged": {
     "src/**/*.{js,ts,tsx}": [
